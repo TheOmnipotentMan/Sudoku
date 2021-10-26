@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+Sudoku storage file
+Stores sudoku grids and some additional information
+
+
+
+
+!!!!!!!! HOW TO ADD NEW SUDOKUS !!!!!!!!
+
+The structure in this file is as follows;
+
+-SudokuStorage
+  - Storage
+    - Category(s)
+      - Sudoku(s)
+        - SudokuGrid
+    
+SudokuStorage is the base element, and only needs to be opened and closed once in the entire file.
+Storage is a general collection of sudokus, and is the opening for any collection.
+Category is a more defined collection of sudokus contained in Storage. In the provided Storage (with the name standard) the categories are based on difficulty, but it can be anything.
+Sudoku contains the actual information about the sudoku.
+SudokuGrid contains the grid-values of the sudoku.
+
+Sudoku grids are to be provided as a string of numbers, with empty squares being 0.
+This string can either be continuous, or have one whitespace after any number within the string, though I would suggest to use one at every 3rd or 9th space.
+
+Examples:
+
+1. 605000000008002006009003540070300000800000700000000093301085009000000060024019000
+
+2. 005719000 000000000 200000000 050020706 000090100 300000250 064501007 810003005 000002040
+
+3. 309 000 200
+   000 502 003
+   008 006 940
+   470 600 000
+   100 000 000
+   000 000 006
+   605 010 008
+   000 000 039
+   024 058 000
+   
+   
+   
+   
+-->
+
+
+
+
+
+<SudokuStorage xmlns="SudStorSchema.xsd">
+
+  <!-- Standard Storage -->
+  <Storage Name="Standard" Source="sudoku.cool">
+    
+    
+    <!-- Beginner -->
+    <Category Name="Beginner">
+      
+      <Sudoku Name="1" Completed="false" Rating="0" Bookmarked="false">
+        605000000008002006009003540070300000800000700000000093301085009000000060024019000
+      </Sudoku>
+
+      <Sudoku>
+        005719000 000000000 200000000 050020706 000090100 300000250 064501007 810003005 000002040
+      </Sudoku>
+
+      <Sudoku>
+        309 000 200
+        000 502 003
+        008 006 940
+        470 600 000
+        100 000 000
+        000 000 006
+        605 010 008
+        000 000 039
+        024 058 000
+      </Sudoku>
+
+      <Sudoku>
+        000010000 527000000 090306000 008009401 109000603 000060200 004000380 910800500 300200000
+      </Sudoku>      
+      
+    </Category>
+    
+    
+    <!-- Easy -->
+    <Category Name="Easy">
+
+      <Sudoku>
+        000070900 000089305 000000020 503700600 200400000 100000253 005100000 070020049 060800010
+      </Sudoku>
+      <Sudoku>
+        000041700 000007208 000000030 000400900 300100000 500000382 008500000 040030017 097600050
+      </Sudoku>
+      <Sudoku>
+        000030400 000094700 000000060 000300800 600100000 200000657 005200000 030060014 084900020
+      </Sudoku>
+      <Sudoku>
+        000028900 000009100 000000040 001000300 400800000 700000451 005700000 020040089 039600070
+      </Sudoku>      
+      
+    </Category>
+    
+    
+    <!-- Medium -->
+    <Category Name="Medium">
+
+      <Sudoku>
+        000309000 600000300 025000000 506007840 000002000 000010000 009060400 003001500 007200016
+      </Sudoku>
+      <Sudoku>
+        040000090 000206500 000038000 301800000 000409001 000020069 900300000 100000054 806000007
+      </Sudoku>
+      <Sudoku>
+        000040180 000900050 021300060 000050038 000134000 060000004 710020800 000400000 405090200
+      </Sudoku>
+      <Sudoku>
+        030000100 000107400 000056000 509000000 000308009 000010078 800509000 002700040 607000002
+      </Sudoku>
+      
+    </Category>
+    
+    
+    <!-- Hard -->
+    <Category Name="Hard">
+
+      <Sudoku>
+        028000000 000000030 000006100 800059062 000001000 003070090 040080000 005900670 190500040
+      </Sudoku>
+      <Sudoku>
+        053000000 000000040 040002700 300060025 000007000 004090010 080030000 006100290 710600080
+      </Sudoku>
+      <Sudoku>
+        070000000 000000063 060002500 000043027 000005000 006090030 080010000 004300290 500400080
+      </Sudoku>
+      <Sudoku>
+        700000400 000370000 030425010 024080090 008600004 005000003 000000001 000002608 106090000
+      </Sudoku>
+      
+    </Category>
+    
+    
+    <!-- Expert -->
+    <Category Name="Expert">
+
+      <Sudoku>
+        000000000 401000700 258700010 004850000 006091003 000007090 065000002 009080300 000602008
+      </Sudoku>
+      <Sudoku>
+        000000060 309000200 176200000 003670000 004059008 000002050 047000001 005060803 000400006
+      </Sudoku>
+      <Sudoku>
+        095000000 000000410 170600000 020058000 000090002 080200070 009046080 860003001 000080300
+      </Sudoku>
+      <Sudoku>
+        076000500 000000190 980500000 000060900 000070004 030400080 007015030 350002009 000030200
+      </Sudoku>
+      
+    </Category>
+    
+  </Storage>
+  
+</SudokuStorage>

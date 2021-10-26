@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Schema for SudokuStorage .xml file -->
+
+<xs:schema id="SudStorSchema"
+    targetNamespace="SudStorSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="SudStorSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+
+
+  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+  <!-- xxxxxxxxxxxxxx    SIMPLE TYPES    xxxxxxxxxxxxxx -->
+  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+
+  <xs:simpleType name="SudokuGridType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((((\d\s*){3}){3}){3}){3}"/>
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="RatingType">
+    <xs:restriction base="xs:unsignedByte">
+      <xs:pattern value="[0-5]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+
+
+
+
+
+
+  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+  <!-- xxxxxxxxxxxxxxx    ATTRIBUTES    xxxxxxxxxxxxxxx -->
+  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+
+  <!-- Storage Attirbutes -->
+  <xs:attributeGroup name="StorageAttributes">
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Source" type="xs:string"/>
+  </xs:attributeGroup>
+  
+  <!-- Category Attributes -->
+  <xs:attributeGroup name="CategoryAttributes">
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:attributeGroup>
+
+  <!-- Sudoku Attributes -->
+  <xs:attributeGroup name="SudokuAttributes">
+    <xs:attribute name="Name" type="xs:string"/>
+    <xs:attribute name="ID" type="xs:long"/>
+    <xs:attribute name="Completed" type="xs:boolean"/>
+    <xs:attribute name="Rating" type="RatingType"/>
+    <xs:attribute name="Bookmarked" type="xs:boolean"/>
+  </xs:attributeGroup>
+
+  
+  
+  
+  
+  
+
+
+
+
+
+  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+  <!-- xxxxxxxxxxxxxxxx    ELEMENTS    xxxxxxxxxxxxxxxx -->
+  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+  
+  <!-- Sudoku Storage -->
+  <xs:element name ="SudokuStorage">
+    <xs:complexType>
+      <xs:sequence>
+        
+        <xs:element name="Storage" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              
+              <xs:element name="Category" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+
+                    <xs:element name="Sudoku" minOccurs="1" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:simpleContent>
+                          <xs:extension base="SudokuGridType">
+                            <xs:attributeGroup ref="SudokuAttributes"/>
+                          </xs:extension>
+                        </xs:simpleContent>                        
+                      </xs:complexType>
+                    </xs:element>
+                    
+                  </xs:sequence>                  
+                  <xs:attributeGroup ref="CategoryAttributes"/>
+                </xs:complexType>
+              </xs:element>
+              
+            </xs:sequence>
+            <xs:attributeGroup ref="StorageAttributes"/>
+          </xs:complexType>          
+        </xs:element>        
+        
+      </xs:sequence>      
+    </xs:complexType>
+  </xs:element>
+  
+  
+</xs:schema>
