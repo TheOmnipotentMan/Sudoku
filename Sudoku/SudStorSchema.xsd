@@ -23,8 +23,16 @@
   </xs:simpleType>
 
   <xs:simpleType name="RatingType">
-    <xs:restriction base="xs:unsignedByte">
+    <xs:restriction base="xs:byte">
       <xs:pattern value="[0-5]"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="GridDimensionType">
+    <xs:restriction base="xs:int">
+      <!-- Current UI only handles 9x9 grids -->
+      <xs:minInclusive value="9"/>
+      <xs:maxInclusive value="9"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -54,10 +62,14 @@
   <xs:attributeGroup name="SudokuAttributes">
     <xs:attribute name="Name" type="xs:string"/>
     <xs:attribute name="ID" type="xs:long"/>
-    <xs:attribute name="Completed" type="xs:boolean"/>
-    <xs:attribute name="Rating" type="RatingType"/>
-    <xs:attribute name="Bookmarked" type="xs:boolean"/>
   </xs:attributeGroup>
+  
+  <!-- Grid Attributes -->
+  <xs:attributeGroup name="GridAttributes">
+    <xs:attribute name="M_length" type="GridDimensionType"/>
+    <xs:attribute name ="N_length" type="GridDimensionType"/>
+  </xs:attributeGroup>
+  
 
   
   
@@ -88,11 +100,31 @@
 
                     <xs:element name="Sudoku" minOccurs="1" maxOccurs="unbounded">
                       <xs:complexType>
+                        <xs:sequence>
+
+                          <xs:element name="M-Length" type="GridDimensionType" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="N-Length" type="GridDimensionType" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="Grid" minOccurs="1" maxOccurs="1">
+                            <xs:complexType>
+                              <xs:simpleContent>
+                                <xs:extension base="SudokuGridType"/>
+                              </xs:simpleContent>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="IsCompleted" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="IsBookmarked" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="Rating" type="RatingType" minOccurs="0" maxOccurs="1"/>
+                          
+                        </xs:sequence>
+                        <xs:attributeGroup ref="SudokuAttributes"/>
+                        
+                        <!-- OLD
                         <xs:simpleContent>
                           <xs:extension base="SudokuGridType">
                             <xs:attributeGroup ref="SudokuAttributes"/>
                           </xs:extension>
-                        </xs:simpleContent>                        
+                        </xs:simpleContent>  
+                        -->
                       </xs:complexType>
                     </xs:element>
                     

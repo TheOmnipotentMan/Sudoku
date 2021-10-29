@@ -20,365 +20,12 @@ namespace Sudoku
     /// </summary>
     class SudokuSource
     {
-        /// <summary>
-        /// Sudoku storage group. Contains a collection of categories, containing sudoku items.
-        /// </summary>
-        public class StorageGroup
-        {
-            public string Name;
-            public string Source;
+        
 
-            public List<Category> Categories;
+        
 
+        
 
-
-            public StorageGroup(string name, string source = "")
-            {
-                if (source == null) { source = ""; }
-
-                Name = name;
-                Source = source;
-                Categories = new List<Category>();
-            }
-
-
-
-
-            /// <summary>
-            /// Add a new category
-            /// </summary>
-            /// <param name="name">Name of the new category</param>
-            public void AddCategory(string name)
-            {
-                Categories.Add(new Category(name));
-            }
-
-            /// <summary>
-            /// Remove a category by name (first found)
-            /// </summary>
-            /// <param name="name"></param>
-            /// <returns>True if succesfull, false if not</returns>
-            public bool RemoveCategory(string name)
-            {
-                for (int i = 0; i < Categories.Count; i++)
-                {
-                    if (Categories[i].Name == name)
-                    {
-                        Categories.RemoveAt(i);
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            /// <summary>
-            /// Remove a category by index
-            /// </summary>
-            /// <param name="index"></param>
-            /// <returns>True if succesfull, false if not</returns>
-            public bool RemoveCategory(int index)
-            {
-                if (index >= Categories.Count || index < 0) { return false; }
-                else
-                {
-                    Categories.RemoveAt(index);
-                    return true;
-                }
-            }
-
-            /// <summary>
-            /// Add a new item to a category, by category name (first found)
-            /// </summary>
-            /// <param name="categoryName"></param>
-            /// <param name="grid"></param>
-            /// <param name="name"></param>
-            /// <param name="rating"></param>
-            /// <param name="completed"></param>
-            /// <param name="bookmarked"></param>
-            /// <returns>True if succesfull, false if not (likely because no category was found matching the given categoryName)</returns>
-            public bool AddItem(string categoryName, int[,] grid, string name = "", byte rating = 0, bool completed = false, bool bookmarked = false)
-            {
-                for (int i = 0; i < Categories.Count; i++)
-                {
-                    if (Categories[i].Name == categoryName)
-                    {
-                        Categories[i].AddItem(grid, name, rating, completed, bookmarked);
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            /// <summary>
-            /// Add a new item to a category, by category index
-            /// </summary>
-            /// <param name="categoryIndex"></param>
-            /// <param name="grid"></param>
-            /// <param name="name"></param>
-            /// <param name="rating"></param>
-            /// <param name="completed"></param>
-            /// <param name="bookmarked"></param>
-            /// <returns>True if succesfull, false if not (likely because given index was out-of-bounds for Categories)</returns>
-            public bool AddItem(int categoryIndex, int[,] grid, string name = "", byte rating = 0, bool completed = false, bool bookmarked = false)
-            {
-                if (categoryIndex >= Categories.Count || categoryIndex < 0) { return false; }
-                else
-                {
-                    Categories[categoryIndex].AddItem(grid, name, rating, completed, bookmarked);
-                    return true;
-                }
-            }
-
-            public bool AddItemToLastCategory(int[,] grid, string name = "", byte rating = 0, bool completed = false, bool bookmarked = false)
-            {
-                if (Categories.Count == 0) { return false; }
-                else
-                {
-                    Categories.Last().AddItem(grid, name, rating, completed, bookmarked);
-                    return true;
-                }
-            }
-
-
-        }
-
-        /// <summary>
-        /// Category grouping of sudoku items.
-        /// Grouping basis can be decided freely, but as an example, it can be difficulty level
-        /// </summary>
-        public class Category
-        {
-            /// <summary>
-            /// Name of this categ
-            /// </summary>
-            public string Name;
-
-            public List<Item> Items;
-
-            /// <summary>
-            /// Create a new category
-            /// </summary>
-            /// <param name="name">Name of this category, should be based on grouping logic of all categories within this StorageGroup, eg difficulty</param>
-            public Category(string name)
-            {
-                Name = name;
-                Items = new List<Item>();
-            }
-
-            /// <summary>
-            /// Add a new sudoku Item to the category
-            /// </summary>
-            /// <param name="grid"></param>
-            /// <param name="name"></param>
-            /// <param name="rating"></param>
-            /// <param name="completed"></param>
-            /// <param name="bookmarked"></param>
-            public void AddItem(int[,] grid, string name = "", byte rating = 0, bool completed = false, bool bookmarked = false)
-            {
-                Items.Add(new Item(grid, name, rating, completed, bookmarked));
-            }
-
-            /// <summary>
-            /// Remove any/all item(s) matching the specified name from the category
-            /// </summary>
-            /// <param name="name"></param>
-            /// <returns></returns>
-            public bool RemoveItem(string name)
-            {
-                bool itemRemoved = false;
-                for (int i = 0; i < Items.Count; i++)
-                {
-                    if (Items[i].Name == name)
-                    {
-                        Items.RemoveAt(i);
-                        itemRemoved = true;
-                    }
-                }
-                return itemRemoved;
-            }
-
-            /// <summary>
-            /// Remove the item at the specified index
-            /// </summary>
-            /// <param name="index"></param>
-            /// <returns></returns>
-            public bool RemoveItem(int index)
-            {
-                if (index >= Items.Count || index < 0) { return false; }
-                else
-                {
-                    Items.RemoveAt(index);
-                    return true;
-                }
-            }
-        }
-
-        public class Item
-        {
-            public string Name;
-
-            public byte Rating;
-            public bool Completed;
-            public bool Bookmarked;
-
-            private int[,] grid;
-
-            public Item (int[,] grid, string name = "", byte rating = 0, bool completed = false, bool bookmarked = false)
-            {
-                // TODO check if data is actually copied over, ie persistent
-                this.grid = grid;
-
-                Name = name;
-                Rating = rating;
-                Completed = completed;
-                Bookmarked = bookmarked;
-            }
-
-            public int[,] Grid
-            {
-                get { return grid; }
-            }
-
-            public string GridAsString()
-            {
-                string x = "";
-                foreach (byte b in grid) { x += b; }
-                return x;
-            }
-        }
-
-
-
-
-
-
-        /// <summary>
-        /// Retrieves data from a SudokuStorage xml file 
-        /// </summary>
-        public class XmlStorage
-        {
-            private string xmlFilePath;
-
-            private XmlReader reader;
-            private XmlReaderSettings settings;
-
-
-            /// <summary>
-            /// Create a new StorageXml class instance
-            /// </summary>
-            /// <param name="path">Path to xml file to read. Must be a valid path</param>
-            public XmlStorage(string path)
-            {
-                // XmlReader
-                settings = new XmlReaderSettings();
-                settings.ValidationType = ValidationType.Schema;
-                settings.Schemas.Add("SudStorSchema.xsd", "sudStorSchema.xsd");
-                xmlFilePath = path;
-            }
-
-
-            /// <summary>
-            /// Is the xml reader able to read the file.
-            /// Call after contstuctor, and before using any other method, to make sure everything behaves as it should
-            /// </summary>
-            /// <returns></returns>
-            public bool IsFileReadable()
-            {
-                RestartReader();
-                return reader.ReadToFollowing("Storage");
-            }
-
-
-            /// <summary>
-            /// Get a collection of all available storages in the xml file
-            /// </summary>
-            /// <returns></returns>
-            public string[] GetStorages()
-            {
-                RestartReader();
-
-                List<string> storages = new List<string>();
-                while (reader.ReadToFollowing("Storage"))
-                {
-                    storages.Add(reader.GetAttribute("Name"));
-                    reader.Skip();
-                }
-
-                return storages.ToArray();
-            }
-
-
-            /// <summary>
-            /// Get a collection of all available categories in the given storage in the xml file
-            /// </summary>
-            /// <param name="storage"></param>
-            /// <returns></returns>
-            public string[] GetCategories(string storage)
-            {
-                RestartReader();
-
-                List<string> categories = new List<string>();
-
-                while (reader.ReadToFollowing("Storage"))
-                {
-                    if (reader.GetAttribute("Name") == storage)
-                    {
-                        while (reader.ReadToFollowing("Category"))
-                        {
-                            categories.Add(reader.GetAttribute("Name"));
-                            reader.Skip();
-                        }
-                    }
-                    else
-                    {
-                        reader.Skip();
-                    }                    
-                }
-
-                return categories.ToArray();
-            }
-
-
-            /// <summary>
-            /// Get a collection of all available categories in the given storage in the xml file
-            /// </summary>
-            /// <param name="storage"></param>
-            /// <returns></returns>
-            public string[] GetCategories(int storageIndex)
-            {
-                RestartReader();
-
-                List<string> categories = new List<string>();
-
-                bool isEndReached = false;
-                int i = 0;
-                while (i < storageIndex && !isEndReached)
-                {
-                    isEndReached = !reader.ReadToFollowing("Storage");
-                    i++;
-                }
-
-                while (reader.ReadToFollowing("Category") && !isEndReached)
-                {
-                    categories.Add(reader.GetAttribute("Name"));
-                    reader.Skip();
-                }
-
-                return categories.ToArray();
-            }
-
-
-
-            /// <summary>
-            /// Start the reader from the beginning
-            /// </summary>
-            private void RestartReader()
-            {
-                reader = XmlReader.Create(xmlFilePath, settings);
-                reader.MoveToContent();
-            }
-            
-        }
 
 
 
@@ -389,9 +36,6 @@ namespace Sudoku
         private List<int[]> prefabs;
 
         private Random rand = new Random();
-
-        private bool IsXmlAvailable = false;
-        public XmlStorage StorageXml;
 
         public List<StorageGroup> Storages;
 
@@ -417,14 +61,6 @@ namespace Sudoku
             Storages = new List<StorageGroup>();
         }
 
-
-
-        private void InstantiateStorageXml(string path)
-        {
-            StorageXml = new XmlStorage(path);
-            IsXmlAvailable = StorageXml.IsFileReadable();
-            if (!IsXmlAvailable) { Debug.WriteLine($"SudokuSource: InstantiateStorageXml() Xml is not available"); }
-        }
 
 
         
@@ -492,10 +128,13 @@ namespace Sudoku
         /// Load the specified xml file into the active Storages
         /// </summary>
         /// <param name="path"></param>
-        public void LoadXmlFileToStorage(string path)
+        public List<StorageGroup> GetContentFromXmlFile(string path)
         {
+            // Content to return
+            List<StorageGroup> content = new List<StorageGroup>();
+
             // Make sure the file is valid
-            if (!System.IO.File.Exists(path) || !(path.Substring(path.Length - 4) == ".xml")) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() recieved an invalid file path, {path}"); return; }
+            if (!System.IO.File.Exists(path) || !(path.Substring(path.Length - 4) == ".xml")) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() recieved an invalid file path, {path}"); return content; }
 
             // Create an XmlReader for the given file at path
             XmlReaderSettings settings = new XmlReaderSettings();
@@ -505,8 +144,17 @@ namespace Sudoku
             XmlReader reader = XmlReader.Create(path, settings);
             reader.MoveToContent();
 
-            // Whether or not to write debug lines to the output, providing info on the reader and any relevant StartElement node it reads 
+            // Whether or not to write debug lines to the output, providing info on any relevant Element/node the reader is reading
             bool showDebug = false;
+
+            // Sudoku values, will be default or overridden by value found in file
+            int mLength;
+            int nLength;
+            string gridString;
+            bool isCompleted;
+            bool isBookmarked;
+            int rating;
+            XmlReader reader1;
 
             while (reader.Read())
             {
@@ -514,22 +162,95 @@ namespace Sudoku
                 {
                     switch (reader.Name)
                     {
+                        // Create a new Storage
                         case "Storage":
                             {
                                 if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader found storage {reader.GetAttribute("Name")}"); }
-                                Storages.Add(new StorageGroup(reader.GetAttribute("Name"), reader.GetAttribute("Source")));
+                                content.Add(new StorageGroup(reader.GetAttribute("Name"), reader.GetAttribute("Source")));
                                 break;
                             }
+                        // Create a new Category, within the most recent Storage
                         case "Category":
                             {
                                 if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader found category {reader.GetAttribute("Name")}"); }
-                                Storages.Last().AddCategory(reader.GetAttribute("Name"));
+                                content.Last().AddCategory(reader.GetAttribute("Name"));
                                 break;
                             }
+                        // Create a new Sudoku, within the most recent Category
                         case "Sudoku":
                             {
                                 if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader found sudoku"); }
-                                Storages.Last().AddItemToLastCategory(ConvertStringToIntArray(reader.ReadElementContentAsString()), reader.GetAttribute("Name"), ConvertStringToByte(reader.GetAttribute("Rating")), ConvertStringToBool(reader.GetAttribute("Completed")), ConvertStringToBool(reader.GetAttribute("Bookmarked")));
+
+                                // Set sudoku values to default
+                                mLength = 9;
+                                nLength = 9;
+                                gridString = "";
+                                isCompleted = false;
+                                isBookmarked = false;
+                                rating = 0;
+
+                                // Create a reader for the Sudoku Subtree, and read()
+                                reader1 = reader.ReadSubtree();                                
+                                while (reader1.Read())
+                                {
+                                    if (reader1.IsStartElement())
+                                    {
+                                        switch (reader1.Name)
+                                        {
+                                            case "Sudoku":
+                                                {
+                                                    // StartElement, does contain attributes that can be obtained here if desired
+                                                    // Currently, reader gets the attributes after reader1 has finished, which eliminates the need for some local variables.
+                                                    // If this case if removed reader1 will hit on the default case and log a debug statement for this element
+                                                    break;
+                                                }
+                                            case "M-Length":
+                                                {
+                                                    mLength = reader1.ReadElementContentAsInt();
+                                                    if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader1 found M-Length {mLength}"); }
+                                                    break;
+                                                }
+                                            case "N-Length":
+                                                {
+                                                    nLength = reader1.ReadElementContentAsInt();
+                                                    if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader1 found N-Length {nLength}"); }
+                                                    break;
+                                                }
+                                            case "Grid":
+                                                {
+                                                    gridString = RemoveWhitespaceFromString(reader1.ReadElementContentAsString());
+                                                    if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader1 found Grid {gridString}"); }
+                                                    break;
+                                                }
+                                            case "IsCompleted":
+                                                {
+                                                    isCompleted = reader1.ReadElementContentAsBoolean();
+                                                    if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader1 found isCompleted {isCompleted}"); }
+                                                    break;
+                                                }
+                                            case "IsBookmarked":
+                                                {
+                                                    isBookmarked = reader1.ReadElementContentAsBoolean();
+                                                    if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader1 found isBookmarked {isBookmarked}"); }
+                                                    break;
+                                                }
+                                            case "Rating":
+                                                {
+                                                    rating = reader1.ReadElementContentAsInt();
+                                                    if (showDebug) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() reader1 found Rating {rating}"); }
+                                                    break;
+                                                }
+                                            default:
+                                                {
+                                                    Debug.WriteLine($"SudokuSource: LoadXmlFileTOStorage() found an Element inside a sudoku without a matching case, any data in this element is not parsed. Element = {reader1.Name}");
+                                                    break;
+                                                }
+                                        }
+                                    }
+                                }
+
+                                // Read the Sudoku values from xml to Storages
+                                content.Last().AddItemToLastCategory(ConvertStringToIntArray(gridString), reader.GetAttribute("Name"), isCompleted, isBookmarked, rating);
                                 break;
                             }
                         // Log a debug statement if no case was found
@@ -541,6 +262,9 @@ namespace Sudoku
                     }
                 }
             }
+
+            return content;
+
         }
 
         /// <summary>
@@ -561,7 +285,7 @@ namespace Sudoku
 
 
 
-
+        /* OLD, TODO remove
 
         //  --------------------------------------------------------------
         //  ----------------         XML METHODS          ----------------
@@ -613,6 +337,7 @@ namespace Sudoku
             }
         }
 
+        */
 
 
 
@@ -622,9 +347,25 @@ namespace Sudoku
 
 
 
+        /// <summary>
+        /// Return the input string without any whitespace
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        private string RemoveWhitespaceFromString(string input)
+        {
+            string output = "";
 
+            foreach (char c in input)
+            {
+                if (!char.IsWhiteSpace(c))
+                {
+                    output += c;
+                }
+            }
 
-
+            return output;
+        }
 
 
         /// <summary>
@@ -644,7 +385,7 @@ namespace Sudoku
         }
 
         /// <summary>
-        /// Convert a string to a byte, returns 0 if unsuccesfull
+        /// Convert a string to a byte, returns default 0 if failed
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
