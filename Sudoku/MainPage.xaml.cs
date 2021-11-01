@@ -26,10 +26,6 @@ namespace Sudoku
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        /// <summary>
-        /// Get info on the state of a sudoku, or its solution
-        /// </summary>
-        private SudokuSolver SudokuSolver;
 
         /// <summary>
         /// Source of Sudokus
@@ -41,6 +37,27 @@ namespace Sudoku
         /// </summary>
         private List<StorageGroup> SudokuStorage;
 
+
+        /// <summary>
+        /// The current sudoku being played
+        /// </summary>
+        private Sudoku Sudoku;
+
+        /// <summary>
+        /// Allowed total length of sudoku, limited by UI
+        /// </summary>
+        private int SudokuAllowedLength = 81;
+        /// <summary>
+        /// Allowed length(0) of sudoku, limited by UI
+        /// </summary>
+        private int SudokuAllowedLength0 = 9;
+        /// <summary>
+        /// Allowed length(1) of sudoku, limited by UI
+        /// </summary>
+        private int SudokuAllowedLength1 = 9;
+
+
+        /*
         /// <summary>
         /// The starting grid of the current sudoku, starting state
         /// </summary>
@@ -50,6 +67,7 @@ namespace Sudoku
         /// The current state of the sudoku, cell values, must be 9x9 to ensure conformity with the UI
         /// </summary>
         private int[,] Sudoku = new int[9, 9];
+        */
 
         /// <summary>
         /// The index values of currently selected sudoku from storage
@@ -78,6 +96,7 @@ namespace Sudoku
         // Font values for numbers on sudoku grid
         private int SudokuGridFontSize = 32;
         private Windows.UI.Text.FontWeight StartingValueFontWeight = Windows.UI.Text.FontWeights.Bold;
+        private Windows.UI.Text.FontWeight DefaultFontWeight = Windows.UI.Text.FontWeights.Normal;
 
 
         private SolidColorBrush MessageTextBlockBrush;
@@ -94,6 +113,8 @@ namespace Sudoku
         public MainPage()
         {
             this.InitializeComponent();
+
+            Sudoku = new Sudoku();
 
             MessageTextBlockBrush = new SolidColorBrush() { Color = Windows.UI.Colors.Black };
 
@@ -136,9 +157,9 @@ namespace Sudoku
         {
             SudokuGrid.Children.Clear();
 
-            for (int m = 0; m < Sudoku.GetLength(0); m++)
+            for (int m = 0; m < Sudoku.M; m++)
             {
-                for (int n = 0; n < Sudoku.GetLength(1); n++)
+                for (int n = 0; n < Sudoku.N; n++)
                 {
                     SudokuGrid.Children.Add(new TextBlock() { Text = string.Empty, FontSize = SudokuGridFontSize, TextAlignment = 0, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
                     SudokuGrid.Children.Last().SetValue(Grid.RowProperty, m);
@@ -154,9 +175,9 @@ namespace Sudoku
         {            
             SudokuStorageGrid.Children.Clear();
 
-            for (int m = 0; m < Sudoku.GetLength(0); m++)
+            for (int m = 0; m < Sudoku.M; m++)
             {
-                for (int n = 0; n < Sudoku.GetLength(1); n++)
+                for (int n = 0; n < Sudoku.N; n++)
                 {
                     SudokuStorageGrid.Children.Add(new TextBlock() { Text = string.Empty, FontSize = SudokuGridFontSize, FontWeight = StartingValueFontWeight, TextAlignment = 0, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
                     SudokuStorageGrid.Children.Last().SetValue(Grid.RowProperty, m);
@@ -174,7 +195,7 @@ namespace Sudoku
 
 
         // -----------------------------------------------------------------
-        // ------------------      Sudoku Logic      -----------------------
+        // --------------      Sudoku Grid Handeling      ------------------
         // -----------------------------------------------------------------
 
         /// <summary>
@@ -190,177 +211,111 @@ namespace Sudoku
             // If any given value is smaller than 0, do nothing
             if (value < 0 || cellCoor < 0) { return; }
 
-            int m = cellCoor / Sudoku.GetLength(0);
-            int n = cellCoor % Sudoku.GetLength(1);
+            int m = cellCoor / Sudoku.M;
+            int n = cellCoor % Sudoku.N;
 
             // If the given cell contains a starting value, display an error message
-            if (SudokuStart[m, n] != 0) { ShowMessageBelowPlayGrid("Cell is staring value", 2); }
+            if (Sudoku.StartGrid[m, n] != 0) { ShowMessageBelowPlayGrid("Cell is staring value", 1); }
             // If only valid input is allowed, and the given value is invalid for the given cell, display an error message
-            else if (ValidInputOnly && !IsCellValid(m, n, value)) { ShowMessageBelowPlayGrid("Invalid value", 2); }
+            else if (ValidInputOnly && !Sudoku.IsCellValid(m, n, value)) { ShowMessageBelowPlayGrid("Invalid value", 1); }
             // Else enter the value onto the grid and clear any message
             else
             {
-                LoadSingleValueToGrid(m, n, value);
+                LoadSingleValueToUIGridStart(m, n, value);
                 ShowMessageBelowPlayGrid("");
+                CheckForWinState();
             }
         }
+
+        /// <summary>
+        /// Check the current sudoku for its win state. ie if the grid is full, validate the sudoku
+        /// </summary>
+        private void CheckForWinState()
+        {
+            if (Sudoku.IsFull)
+            {
+                ValidateSudoku(true);
+            }
+        }
+
 
         /// <summary>
         /// Validate the current sudoku.
         /// Check for any errors and win-state
         /// </summary>
-        private void ValidateSudoku()
+        private void ValidateSudoku(bool isFull = false)
         {
-            // Check if there are any empty fields, ie has the sudoku been completed
-            bool isFull = true;
-            for (int iM = 0; iM < Sudoku.GetLength(0); iM++)
+            if (isFull)
             {
-                for (int iN = 0; iN < Sudoku.GetLength(1); iN++)
+                if (Sudoku.IsGridValid())
                 {
-                    if (Sudoku[iM, iN] == 0) { isFull = false; }
+                    ShowMessageBelowPlayGrid("CONGRATULATIONS!");
                 }
             }
-
-            // Go over every cell and row
-
-        }
-
-        /// <summary>
-        /// Check whether the number v in valid in the cell at coors m, n
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="n"></param>
-        /// <param name="v"></param>
-        /// <returns>True is no conflicting value(s) is found. False is there is</returns>
-        private bool IsCellValid(int m, int n, int v = -1)
-        {
-            if (v < 0) { v = Sudoku[m, n]; }
-
-            return IsCellValidRow(m, n, v) && IsCellValidColumn(m, n, v) && IsCellValidRegion(m, n, v);
-        }
-
-        /// <summary>
-        /// Check whether the number v is present anywhere else the row m
-        /// </summary>
-        /// <param name="m">Row to search through</param
-        /// <param name="n">Column of the original cell with value v, needed to not hit on the original cell and its value. Provide a negative number to ignore and match with any cell</param>
-        /// <param name="v">Value to match</param>
-        /// <returns>True is no matching value is found. False is there is</returns>
-        private bool IsCellValidRow(int m, int n, int v = -1)
-        {
-            // If no v was specified, get the current value of the Sudoku cell at [m, n]
-            if (v < 0) { v = Sudoku[m, n]; }
-
-            // If v is not 0, ie the cell is not empty
-            if (v != 0)
+            else
             {
-                // Go over the cells in row m
-                for (int i = 0; i < Sudoku.GetLength(1); i++)
+                if (Sudoku.IsGridValid())
                 {
-                    // If the value v matches with the value in the cell, and the cell is not the original at column n, cell is not valid so return false
-                    if (v == Sudoku[m, i] && i != n) { return false; }
-                }
-            }
-
-            // Value is 0 or no match was found, return true
-            return true;
-        }
-
-        /// <summary>
-        /// Check whether the number v is present anywhere else in the column n
-        /// </summary>
-        /// <param name="m">Row of the original cell with value v, needed to not hit on the original cell and its value. Provide a negative number to ignore and match with any cell</param>
-        /// <param name="n"></param>
-        /// <param name="v"></param>
-        /// <returns>True is no matching value is found. False is there is</returns>
-        private bool IsCellValidColumn(int m, int n, int v = -1)
-        {
-            // If no v was specified, get the current value of the Sudoku cell at [m, n]
-            if (v < 0) { v = Sudoku[m, n]; }
-
-            // If v is not 0, ie the cell is not empty
-            if (v != 0)
-            {
-                // Go over the cells in row m
-                for (int i = 0; i < Sudoku.GetLength(0); i++)
-                {
-                    // If the value v matches with the value in the cell, and the cell is not the original at row m, cell is not valid so return false
-                    if (v == Sudoku[i, n] && i != m) { return false; }
-                }
-            }
-
-            // Value is 0 or no match was found, return true
-            return true;
-        }
-
-        /// <summary>
-        /// Check whether the number v is present anywhere else in the local region
-        /// The dimensions of the region are determined by dividing the Sudoku into segments/squares/rectangles, with their dimensions equal to the square root of the length of the corresponding dimension of the sudoku itself
-        /// To ignore the coors m and n, and hit on any cell in the region with specify negative values
-        /// </summary>
-        /// <param name="m">Row coor of the original cell</param>
-        /// <param name="n">Column coor of the original cell</param>
-        /// <param name="v">Value to match</param>
-        /// <returns>True is no matching value is found. False is there is</returns>
-        private bool IsCellValidRegion(int m, int n, int v = -1)
-        {
-            // If no v was specified, get the current value of the Sudoku cell at [m, n]
-            if (v < 0) { v = Sudoku[m, n]; }
-
-            if (v != 0)
-            {
-                // Calculate the lengths of a single region, log debug messages if sqrt does not result in a whole integer
-                if (!IsSqrtInt(Sudoku.GetLength(0))) { Debug.WriteLine($"MainPage: IsCellValidRegion() the square root of the grid dimension M is not a whole number, this might cause problems while determining the length for regions of the sudoku, due to required rounding."); }
-                if (!IsSqrtInt(Sudoku.GetLength(1))) { Debug.WriteLine($"MainPage: IsCellValidRegion() the square root of the grid dimension N is not a whole number, this might cause problems while determining the length for regions of the sudoku, due to required rounding."); }
-                int regLengthM = (int)Math.Sqrt(Sudoku.GetLength(0));
-                int regLengthN = (int)Math.Sqrt(Sudoku.GetLength(1));
-
-                // Test, TODO remove
-                Debug.WriteLine($"MainPage(): IsCellValidRegion(m={m}, n={n}, v={v}) region dimensions are {regLengthM}, {regLengthN}");
-
-                // Go over each cell in the region
-                for (int m1 = m / regLengthM * regLengthM; m1 < m / regLengthM * regLengthM + regLengthM; m1++)
-                {
-                    for (int n1 = n / regLengthN * regLengthN; n1 < n / regLengthN * regLengthN + regLengthN; n1++)
+                    if (Sudoku.IsFull)
                     {
-                        // Test, TODO remove
-                        Debug.WriteLine($"MainPage(): IsCellValidRegion(m={m}, n={n}, v={v}) checking cell {m1}, {n1}");
-
-                        if (v == Sudoku[m1, n1] && m1 != m && n1 != n) { return false; }
+                        ShowMessageBelowPlayGrid("CONGRATULATIONS!");
+                    }
+                    else
+                    {
+                        ShowMessageBelowPlayGrid("No errors detected");
                     }
                 }
+                else
+                {
+                    ShowMessageBelowPlayGrid("Errors detected", 2);
+                }
             }
-
-            // Value is 0 or no match was found, return true
-            return true;
         }
 
         /// <summary>
-        /// Check whether the values in row m are valid or if there are any conflicts/duplicates
+        /// Enable/Disable the appropriate numbers for the selected cell
         /// </summary>
         /// <param name="m"></param>
-        /// <returns></returns>
-        private bool IsRowValid(int m)
+        /// <param name="n"></param>
+        private void SetValidNumberButtonsForCell(int m, int n)
         {
-            if (m < 0 || m >= Sudoku.GetLength(0)) { return false; }
-
-            bool?[] numbers = new bool?[Sudoku.GetLength(0)];
-
-            for (int n = 0; n < Sudoku.GetLength(1); n++)
+            if (ValidInputOnly)
             {
-                // If the number is encounter for the first time, set numbers[n] to true
-                // If it is encounter again, numbers[n] being not null but true this time, set numbers[n] to false
-                if (Sudoku[m, n] != 0 && numbers[n] != false) { numbers[n] = (numbers[n] == null) ? true : false; }
+                bool[] validNums = Sudoku.GetValidNumbersForCell(m, n);
+                for (int i = 0; i < validNums.Length; i++)
+                {
+                    SetIsEnabledForInputNumber(i, validNums[i]);
+                }
             }
-
-            bool result = true;
-
-            foreach (bool? num in numbers)
-            {
-                if (result != false ) { result = num != false; }
-            }
-            return result;
         }
+
+        private async void GetSolution()
+        {
+            Debug.WriteLine($"MainPage: GetSolution() starting");
+
+            // Start progress-ring to signal that the solution is being worked on
+            SolveProgressRing.IsActive = true;
+            
+            int[,] solution = await Sudoku.GetSolution();
+
+            Debug.WriteLine($"MainPage: GetSolution() got solution");
+
+            for (int m = 0; m < solution.GetLength(0); m++)
+            {
+                string row = "";
+                for (int n = 0; n < solution.GetLength(1); n++)
+                {
+                    row += solution[m, n] + " ";
+                    LoadSingleValueToUIGrid(m, n, solution[m, n]);
+                }
+                Debug.WriteLine(row);
+            }
+
+            // End the progress-ring
+            SolveProgressRing.IsActive = false;
+        }
+
+        
 
 
 
@@ -403,7 +358,6 @@ namespace Sudoku
             AddToSudokuStorage(SudokuSource.GetContentFromXmlFile(path));
         }
 
-
         /// <summary>
         /// Add a collection to the current SudokuStorage collection
         /// </summary>
@@ -437,8 +391,8 @@ namespace Sudoku
         {
             if (SudokuStorage == null || storageIndex < 0 || categoryIndex < 0 || itemIndex < 0 || SudokuStorage.Count == 0)
             {
-                int[,] grid = new int[Sudoku.GetLength(0), Sudoku.GetLength(1)];
-                for (int i = 0; i < grid.Length; i++) { grid[i / Sudoku.GetLength(0), i % Sudoku.GetLength(1)] = i; }
+                int[,] grid = new int[Sudoku.M, Sudoku.N];
+                for (int i = 0; i < grid.Length; i++) { grid[i / Sudoku.M, i % Sudoku.N] = i; }
                 LoadNewSudokuToGrid(grid);
             }
             else
@@ -456,8 +410,8 @@ namespace Sudoku
             if (SudokuStorage == null || SudokuStorage.Count == 0)
             {
                 // Load the grid with cell-count values, signaling a sudoku could not be loaded
-                int[,] grid = new int[Sudoku.GetLength(0), Sudoku.GetLength(1)];
-                for (int i = 0; i < grid.Length; i++) { grid[i / Sudoku.GetLength(0), i % Sudoku.GetLength(1)] = i; }
+                int[,] grid = new int[Sudoku.M, Sudoku.N];
+                for (int i = 0; i < grid.Length; i++) { grid[i / Sudoku.M, i % Sudoku.N] = i; }
                 LoadNewSudokuToGrid(grid);
             }
             else
@@ -471,11 +425,12 @@ namespace Sudoku
         }
 
         /// <summary>
-        /// Restart the current sudoku. Loads SudokuStart to the play grid
+        /// Restart the current sudoku. Loads the starting grid to the play grid
         /// </summary>
         private void RestartSudoku()
         {
-            LoadNewSudokuToGrid(SudokuStart);
+            Sudoku.RestartGrid();
+            LoadNewSudokuToGrid(Sudoku.Grid);
         }
 
 
@@ -499,34 +454,33 @@ namespace Sudoku
         /// <param name="gridValues">int[] (1x81) containing the values to load</param>
         private void LoadNewSudokuToGrid(int[] gridValues)
         {
+            // Unlock any disabled number buttons
+
+
             // Make sure the provided array gridValues is of the correct length, if not then return
-            if (gridValues.Length != Sudoku.Length)
+            if (gridValues.Length != SudokuAllowedLength)
             {
                 Debug.WriteLine($"LoadSudokuToGrid: gridValues length must be equal 81. This value is required because of the UI. length = {gridValues.Length}");
                 return;
             }
 
-            // Make sure the grid has been populated with the required elements/cells
-            if (SudokuGrid.Children.Count != Sudoku.Length)
-            {
-                InstantiateSudokuGridCells();
-            }
+            // Load the gridValues as the current sudoku
+            Sudoku.NewGrid(gridValues);
 
-            // Load the gridValues as the current sudoku, and to the grid on screen
-            int x;
-            for (int m = 0; m < Sudoku.GetLength(0); m++)
+            // Load the sudoku to the grid on screen
+            if (SudokuGrid.Children.Count != Sudoku.Length) { InstantiateSudokuGridCells(); }
+            for (int m = 0; m < Sudoku.M; m++)
             {
-                for (int n = 0; n < Sudoku.GetLength(1); n++)
-                {                    
-                    x = m * Sudoku.GetLength(1) + n;
-                    SudokuStart[m, n] = gridValues[x];
-                    Sudoku[m, n] = gridValues[x];
-                    LoadSingleValueToGrid(m, n, gridValues[x], true);
+                for (int n = 0; n < Sudoku.N; n++)
+                {
+                    LoadSingleValueToUIGridStart(m, n, Sudoku.Grid[m, n], true);
                 }
             }
 
             // Set whether to allow only valid input for this game
             ValidInputOnly = ValidNumberEntryCheckBox.IsChecked ?? false;
+            // Enable all numbers
+            SetIsEnabledForInputNumber(-1, true);
             // Clear any message from the previous game
             ShowMessageBelowPlayGrid("");
         }
@@ -539,7 +493,7 @@ namespace Sudoku
         private void LoadNewSudokuToGrid(int[,] gridValues)
         {
             // Make sure the provided array gridValues is of the correct length, if not then return
-            if (gridValues.Rank != 2 || gridValues.GetLength(0) != Sudoku.GetLength(0) || gridValues.GetLength(1) != Sudoku.GetLength(1))
+            if (gridValues.Rank != 2 || gridValues.GetLength(0) != SudokuAllowedLength0 || gridValues.GetLength(1) != SudokuAllowedLength1)
             {
                 Debug.WriteLine($"LoadSudokuToGrid: gridValues must be 9x9. This value is required because of the UI. length0 = {gridValues.GetLength(0)}, length1 = {gridValues.GetLength(1)}");
                 return;
@@ -548,56 +502,92 @@ namespace Sudoku
             // Populated with clean elements/cells
             InstantiateSudokuGridCells();
 
-            // Load the gridValues as the current sudoku, and to the grid on screen
-            SudokuStart = gridValues;
-            Sudoku = gridValues;
-            for (int m = 0; m < Sudoku.GetLength(0); m++)
+            // Load the gridValues as the current sudoku
+            Sudoku.NewGrid(gridValues);
+
+            // Load the sudoku to the grid on screen
+            for (int m = 0; m < Sudoku.M; m++)
             {
-                for (int n = 0; n < Sudoku.GetLength(1); n++)
+                for (int n = 0; n < Sudoku.N; n++)
                 {
-                    LoadSingleValueToGrid(m, n, gridValues[m, n], true);
+                    LoadSingleValueToUIGridStart(m, n, Sudoku.Grid[m, n], true);
                 }
             }
 
             // Set whether to allow only valid input for this game
             ValidInputOnly = ValidNumberEntryCheckBox.IsChecked ?? false;
+            // Enable all numbers
+            SetIsEnabledForInputNumber(-1, true);
             // Clear any message from the previous game
             ShowMessageBelowPlayGrid("");
         }
 
         /// <summary>
-        /// Load a value to the specified element on SudokuGrid
+        /// Load a value to the specified element on SudokuGrid, when starting a new Sudoku
         /// </summary>
-        /// <param name="m">M-coordinate. must be (Sudoku.GetLength(0) > m >= 0)</param>
-        /// <param name="n">N-coordinate. must be (Sudoku.GetLength(1) > n >= 0)</param>
+        /// <param name="m">M-coordinate. must be (Sudoku.M > m >= 0)</param>
+        /// <param name="n">N-coordinate. must be (Sudoku.N > n >= 0)</param>
         /// <param name="value">value to load to grid element/cell</param>
         /// <param name="isStart">Whether this element is a starting element of the sudoku, and should be noted in bold</param>
-        private void LoadSingleValueToGrid(int m, int n, int value, bool isStart = false)
+        private void LoadSingleValueToUIGridStart(int m, int n, int value, bool isStart = false)
         {
-            if (m < 0 || n < 0 || m >= Sudoku.GetLength(0) || n >= Sudoku.GetLength(1)) { return; }
+            // If any invalid value given, return
+            if (m < 0 || n < 0 || m >= Sudoku.M || n >= Sudoku.N) { return; }
+                        
+            if (isStart) { SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.FontWeightProperty, StartingValueFontWeight); }
+            else { SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.FontWeightProperty, DefaultFontWeight); }
 
-            SudokuGrid.Children.ElementAt(m * Sudoku.GetLength(1) + n).SetValue(TextBlock.TextProperty, value == 0 ? string.Empty : value.ToString());
-            if (isStart)
-            {
-                SudokuGrid.Children.ElementAt(m * Sudoku.GetLength(1) + n).SetValue(TextBlock.FontWeightProperty, StartingValueFontWeight);
-            }
+            SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.TextProperty, value == 0 ? string.Empty : value.ToString());
+        }
+
+        /// <summary>
+        /// Load a value to the specified element on SudokuGrid, when starting a new Sudoku
+        /// </summary>
+        /// <param name="m">M-coordinate. must be (Sudoku.M > m >= 0)</param>
+        /// <param name="n">N-coordinate. must be (Sudoku.N > n >= 0)</param>
+        /// <param name="value">value to load to grid element/cell</param>
+        /// <param name="isStart">Whether this element is a starting element of the sudoku, and should be noted in bold</param>
+        private void LoadSingleValueToUIGridStart(int m, int n, string value, bool isStart = false)
+        {
+            // If any invalid value given, return
+            if (m < 0 || n < 0 || m >= Sudoku.M || n >= Sudoku.N) { return; }
+
+            if (isStart) { SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.FontWeightProperty, StartingValueFontWeight); }
+            else { SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.FontWeightProperty, DefaultFontWeight); }
+
+            SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.TextProperty, value == "0" ? string.Empty : value.ToString());
         }
 
         /// <summary>
         /// Load a value to the specified element on SudokuGrid
         /// </summary>
-        /// <param name="m">M-coordinate. must be (Sudoku.GetLength(0) > m >= 0)</param>
-        /// <param name="n">N-coordinate. must be (Sudoku.GetLength(1) > n >= 0)</param>
+        /// <param name="m">M-coordinate. must be (Sudoku.M > m >= 0)</param>
+        /// <param name="n">N-coordinate. must be (Sudoku.N > n >= 0)</param>
         /// <param name="value">value to load to grid element/cell</param>
-        /// <param name="isStart">Whether this element is a starting element of the sudoku, and should be noted in bold</param>
-        private void LoadSingleValueToGrid(int m, int n, string value, bool isStart = false)
+        private void LoadSingleValueToUIGrid(int m, int n, int value)
         {
-            SudokuGrid.Children.ElementAt(m * Sudoku.GetLength(1) + n).SetValue(TextBlock.TextProperty, value == "0" ? string.Empty : value.ToString());
-            if (isStart)
-            {
-                SudokuGrid.Children.ElementAt(m * Sudoku.GetLength(1) + n).SetValue(TextBlock.FontWeightProperty, StartingValueFontWeight);
-            }
+            // If any invalid value given, return
+            if (m < 0 || n < 0 || m >= Sudoku.M || n >= Sudoku.N || m * n >= SudokuGrid.Children.Count) { return; }
+
+            SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.TextProperty, value == 0 ? string.Empty : value.ToString());
         }
+
+        /// <summary>
+        /// Load a value to the specified element on SudokuGrid
+        /// </summary>
+        /// <param name="m">M-coordinate. must be (Sudoku.M > m >= 0)</param>
+        /// <param name="n">N-coordinate. must be (Sudoku.N > n >= 0)</param>
+        /// <param name="value">value to load to grid element/cell</param>
+        private void LoadSingleValueToUIGrid(int m, int n, string value)
+        {
+            // If any invalid value given, return
+            if (m < 0 || n < 0 || m >= Sudoku.M || n >= Sudoku.N || m * n >= SudokuGrid.Children.Count) { return; }
+
+            SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.TextProperty, value == "0" ? string.Empty : value.ToString());
+        }
+
+
+
 
 
 
@@ -609,7 +599,7 @@ namespace Sudoku
 
 
         // -----------------------------------------------------------------
-        // -----------     Sudoku Storage Grid manipulation      -----------
+        // --------     Sudoku Storage Grid, UI, manipulation      ---------
         // -----------------------------------------------------------------
 
         /// <summary>
@@ -628,8 +618,8 @@ namespace Sudoku
                 storageIndex >= SudokuStorage.Count || categoryIndex >= SudokuStorage[storageIndex].Categories.Count || itemIndex >= SudokuStorage[storageIndex].Categories[categoryIndex].Items.Count)
             {
                 // Load the grid with cell-count values, signaling a sudoku could not be loaded
-                grid = new int[Sudoku.GetLength(0), Sudoku.GetLength(1)];
-                for (int i = 0; i < grid.Length; i++) { grid[i / Sudoku.GetLength(0), i % Sudoku.GetLength(1)] = i; }
+                grid = new int[9, 9];
+                for (int i = 0; i < grid.Length; i++) { grid[i / 9, i % 9] = i; }
             }
             else
             {
@@ -643,11 +633,11 @@ namespace Sudoku
                 InstantiateSudokuStorageGridCells();
             }
 
-            for (int m = 0; m < Sudoku.GetLength(0); m++)
+            for (int m = 0; m < Sudoku.M; m++)
             {
-                for (int n = 0; n < Sudoku.GetLength(1); n++)
+                for (int n = 0; n < Sudoku.N; n++)
                 {
-                    SudokuStorageGrid.Children.ElementAt(m * Sudoku.GetLength(1) + n).SetValue(TextBlock.TextProperty, grid[m, n] == 0 ? string.Empty : grid[m, n].ToString());
+                    SudokuStorageGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.TextProperty, grid[m, n] == 0 ? string.Empty : grid[m, n].ToString());
                 }
             }
         }
@@ -661,7 +651,7 @@ namespace Sudoku
 
 
         // -----------------------------------------------------------------
-        // ---------------      UI element manipulation      ---------------
+        // --------------      UI elements manipulation      ---------------
         // -----------------------------------------------------------------
 
         /// <summary>
@@ -730,7 +720,7 @@ namespace Sudoku
         /// <summary>
         /// Set IsEnabled for the specified NumSelButton
         /// </summary>
-        /// <param name="number"></param>
+        /// <param name="number">Between 0 & 9, anything else will effect all buttons</param>
         /// <param name="isEnabled"></param>
         private void SetIsEnabledForInputNumber(int number, bool isEnabled)
         {
@@ -745,6 +735,21 @@ namespace Sudoku
                 case 7: { NumSelButton7.IsEnabled = isEnabled; break; }
                 case 8: { NumSelButton8.IsEnabled = isEnabled; break; }
                 case 9: { NumSelButton9.IsEnabled = isEnabled; break; }
+                case 0: { NumSelButton0.IsEnabled = isEnabled; break; }
+                default:
+                    {
+                        NumSelButton1.IsEnabled = isEnabled;
+                        NumSelButton2.IsEnabled = isEnabled;
+                        NumSelButton3.IsEnabled = isEnabled;
+                        NumSelButton4.IsEnabled = isEnabled;
+                        NumSelButton5.IsEnabled = isEnabled;
+                        NumSelButton6.IsEnabled = isEnabled;
+                        NumSelButton7.IsEnabled = isEnabled;
+                        NumSelButton8.IsEnabled = isEnabled;
+                        NumSelButton9.IsEnabled = isEnabled;
+                        NumSelButton0.IsEnabled = isEnabled;
+                        break;
+                    }
             }
         }
 
@@ -781,7 +786,7 @@ namespace Sudoku
 
 
         // -----------------------------------------------------------------
-        // --------------------      Helper Method      --------------------
+        // -------------------      Helper Methods      --------------------
         // -----------------------------------------------------------------
 
         /// <summary>
@@ -791,7 +796,7 @@ namespace Sudoku
         private string SudokuAsString()
         {
             string s = "";
-            foreach (int i in Sudoku) { s += i; }
+            foreach (int i in Sudoku.Grid) { s += i; }
             return s;
         }
 
@@ -802,7 +807,7 @@ namespace Sudoku
         private string SudokuStartAsString()
         {
             string s = "";
-            foreach (int i in SudokuStart) { s += i; }
+            foreach (int i in Sudoku.StartGrid) { s += i; }
             return s;
         }
 
@@ -856,12 +861,12 @@ namespace Sudoku
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"MainPage: TestButton_Click() SudokuCellButtonsGridView.SelectedIndex = {SudokuCellButtonsGridView.SelectedIndex}");
+            Debug.WriteLine($"MainPage: TestButton_Click() Sudoku = {SudokuAsString()}");
         }
 
         private void Test2Button_Click(object sender, RoutedEventArgs e)
         {
-            RestartSudoku();
+            LoadNewSudokuToGrid(new int[81] { 6,0,5,9,0,0,0,0,0,7,0,8,0,0,2,9,0,6,2,1,9,8,6,3,5,4,7,0,7,0,3,9,0,0,5,0,8,9,3,0,0,0,7,0,0,0,5,0,0,0,0,0,9,3,3,6,1,7,8,5,4,2,9,9,8,7,2,3,4,1,6,5,5,2,4,6,1,9,3,7,8 });
         }
 
         // Use SudokuCellButtonsGridView_SelectionChanged() instead, click happens before GridView.SelectedIndex has updated (event is not bound)
@@ -873,7 +878,14 @@ namespace Sudoku
 
         private void SudokuCellButtonsGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            /* Test
             Debug.WriteLine($"MainPage: SudokuCellButtonsGridView_SelectionChanged() {SudokuCellButtonsGridView.SelectedIndex}");
+            bool[] validNums = Sudoku.GetValidNumbersForCell(SudokuCellButtonsGridView.SelectedIndex / 9, SudokuCellButtonsGridView.SelectedIndex % 9);
+            for (int i = 0; i < validNums.Length; i++)
+            {
+                Debug.WriteLine($"MainPage: SudokuCellButtonsGridView_SelectionChanged() {i} = {validNums[i]}");
+             */
+            SetValidNumberButtonsForCell(SudokuCellButtonsGridView.SelectedIndex / SudokuAllowedLength0, SudokuCellButtonsGridView.SelectedIndex % SudokuAllowedLength1);
         }
 
         private void NumSel_Click(object sender, RoutedEventArgs e)
@@ -888,7 +900,6 @@ namespace Sudoku
             catch (Exception exception)
             {
                 Debug.WriteLine($"SudokuNumSel_Click() caught Exception {exception}");
-                throw;
             }
             ProcessSudokuInput(i, SudokuCellButtonsGridView.SelectedIndex);
         }
@@ -940,12 +951,12 @@ namespace Sudoku
 
         private void CheckCurrentStateForErrorsButton_Click(object sender, RoutedEventArgs e)
         {
-
+            ValidateSudoku();
         }
 
         private void SolveSudokuButton_Click(object sender, RoutedEventArgs e)
         {
-
+            GetSolution();
         }
 
         private void SudokuPivotItem_KeyUp(object sender, KeyRoutedEventArgs e)
