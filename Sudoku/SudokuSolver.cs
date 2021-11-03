@@ -122,6 +122,17 @@ namespace Sudoku
                     isAnyCellAltered = FindValuesLimitedToSingleRowOrColumnOfRegions(solution, validNums);
                 }
 
+                // If no valid numbers were removed from cells by looking for values that are limited to a single row or column within a region
+                if (!isAnyCellAltered)
+                {
+
+                }
+
+
+                
+
+
+
                 // If still not a single solution was found
                 if (!isAnyCellAltered)
                 {
@@ -310,190 +321,6 @@ namespace Sudoku
 
 
 
-        // TODO remove
-        /// <summary>
-        /// Find all values that occure only once in a row, meaning that that is the only place they can be entered for the solution
-        /// Looks at all rows, since no row has any weight when considering the valid values of another
-        /// Returns a collection of int[]'s, one int[] for each found value, with the int[] containing the data {m, n, value}
-        /// </summary>
-        /// <param name="validNums"></param>
-        /// <returns></returns>
-        private List<int[]> FindSingleValuesRowsOld(bool[,,] validNums)
-        {
-            // Collection that will contain all found single values as int[] with {m, n, value}
-            List<int[]> singleValues = new List<int[]>();
-
-            // Bool?[] to search for single occurance values
-            bool?[] isSingleNum = new bool?[validNums.GetLength(2)];
-
-            // For each row
-            for (int mRow = 0; mRow < validNums.GetLength(0); mRow++)
-            {
-                // For each cell in the row
-                for (int nRow = 0; nRow < validNums.GetLength(1); nRow++)
-                {
-                    // Go over all available numbers in validNums (index = number)
-                    for (int num = 0; num < validNums.GetLength(2); num++)
-                    {
-                        // If the current number is valid
-                        if (validNums[mRow, nRow, num])
-                        {
-                            // Set isSingleNum[num] on the first encounter to true, and on any subsequent encounters to false
-                            isSingleNum[num] = isSingleNum[num] == null;
-                        }
-                    }
-                }
-
-                // For the bools in isSingleNum
-                for (int sinNum = 0; sinNum < isSingleNum.Length; sinNum++)
-                {
-                    // If the number occured only once
-                    if (isSingleNum[sinNum] == true)
-                    {
-                        // Find its location in validNums
-                        for (int indexRow = 0; indexRow < validNums.GetLength(2); indexRow++)
-                        {
-                            if (validNums[mRow, indexRow, sinNum])
-                            {
-                                // Add its info to the singleValues collection
-                                singleValues.Add(new int[] { mRow, indexRow, sinNum + 1 });
-                                Debug.WriteLine($"SudokuSolver: FindSingleValuesRowsOld() found [{mRow}, {indexRow}] = {sinNum + 1}");
-                            }
-                        }
-                    }
-                }
-            }
-
-            return singleValues;
-        }
-
-
-
-        // TODO remove
-        /// <summary>
-        /// Find all values that occure only once in a column, meaning that that is the only place they can be entered for the solution
-        /// Looks at all columns, since no column has any weight when considering the valid values of another
-        /// Returns a collection of int[]'s, one int[] for each found value, with the int[] containing the data {m, n, value}
-        /// </summary>
-        /// <param name="validNums"></param>
-        /// <returns></returns>
-        private List<int[]> FindSingleValuesColumnsOld(bool[,,] validNums)
-        {
-            // Collection that will contain all found single values as int[] with {m, n, value}
-            List<int[]> singleValues = new List<int[]>();
-
-            // Bool?[] to search for single occurance values
-            bool?[] isSingleNum = new bool?[validNums.GetLength(2)];
-
-            // For each column
-            for (int nColumn = 0; nColumn < validNums.GetLength(1); nColumn++)
-            {
-                // For each cell in the column
-                for (int mColumn = 0; mColumn < validNums.GetLength(0); mColumn++)
-                {
-                    // Go over all available numbers in validNums (index = number)
-                    for (int num = 0; num < validNums.GetLength(2); num++)
-                    {
-                        // If the current number is valid
-                        if (validNums[mColumn, nColumn, num])
-                        {
-                            // Set isSingleNum[num] on the first encounter to true, and on any subsequent encounters to false
-                            isSingleNum[num] = isSingleNum[num] == null;
-                        }
-                    }
-                }
-
-                // For the bools in isSingleNum
-                for (int sinNum = 0; sinNum < isSingleNum.Length; sinNum++)
-                {
-                    // If the number occured only once
-                    if (isSingleNum[sinNum] == true)
-                    {
-                        // Find its location in validNums
-                        for (int indexColumn = 0; indexColumn < validNums.GetLength(2); indexColumn++)
-                        {
-                            if (validNums[indexColumn, nColumn, sinNum])
-                            {
-                                // Add its info to the singleValues collection
-                                singleValues.Add(new int[] { indexColumn, nColumn, sinNum + 1 });
-                                Debug.WriteLine($"SudokuSolver: FindSingleValuesColumnsOld() found [{indexColumn}, {nColumn}] = {sinNum + 1}");
-                            }
-                        }
-                    }
-                }
-            }
-
-            return singleValues;
-        }
-
-
-
-        // TODO remove
-        /// <summary>
-        /// Find all values that occure only once in a region, meaning that that is the only place they can be entered for the solution
-        /// Looks at all region, since no region has any weight when considering the valid values of another
-        /// Returns a collection of int[]'s, one int[] for each found value, with the int[] containing the data {m, n, value}
-        /// </summary>
-        /// <param name="validNums"></param>
-        /// <returns></returns>
-        private List<int[]> FindSingleValuesRegionsOld(bool[,,] validNums)
-        {
-            // Collection that will contain all found single values as int[] with {m, n, value}
-            List<int[]> singleValues = new List<int[]>();
-
-            // Bool?[] to search for single occurance values
-            bool?[] isSingleNum = new bool?[validNums.GetLength(2)];
-
-            // For each region
-            for (int mReg = 0; mReg < validNums.GetLength(0); mReg += RegionDim)
-            {
-                for (int nReg = 0; nReg < validNums.GetLength(0); nReg += RegionDim)
-                {
-
-                    // For each cell in the region
-                    for (int m = mReg; m < mReg + RegionDim; m++)
-                    {
-                        for (int n = nReg; n < nReg + RegionDim; n++)
-                        {
-                            // Go over all available numbers in validNums (index = number)
-                            for (int num = 0; num < validNums.GetLength(2); num++)
-                            {
-                                // If the current number is valid
-                                if (validNums[m, n, num])
-                                {
-                                    // Set isSingleNum[num] on the first encounter to true, and on any subsequent encounters to false
-                                    isSingleNum[num] = isSingleNum[num] == null;
-                                }
-                            }
-                        }
-                    }
-
-                    // For the bools in isSingleNum
-                    for (int sinNum = 0; sinNum < isSingleNum.Length; sinNum++)
-                    {
-                        // If the number occured only once
-                        if (isSingleNum[sinNum] == true)
-                        {
-                            // Find its location in validNums
-                            for (int mRegIndex = mReg; mRegIndex < mReg + RegionDim; mRegIndex++)
-                            {
-                                for (int nRegIndex = nReg; nRegIndex < nReg + RegionDim; nRegIndex++)
-                                {
-                                    if (validNums[mRegIndex, nRegIndex, sinNum])
-                                    {
-                                        // Add its info to the singleValues collection
-                                        singleValues.Add(new int[] { mRegIndex, nRegIndex, sinNum + 1 });
-                                        Debug.WriteLine($"SudokuSolver: FindSingleValuesRegionsOld() found [{mRegIndex}, {nRegIndex}] = {sinNum + 1}");
-                                    }
-                                }                                
-                            }
-                        }
-                    }
-                }
-            }
-
-            return singleValues;
-        }
 
 
 
@@ -504,113 +331,6 @@ namespace Sudoku
 
 
 
-
-
-
-
-
-
-
-
-
-
-        /// <summary>
-        /// Find the valid numbers for each cell on the specified solution grid and write them to validNums
-        /// If a cell only has a single valid number, enter it into the cell of solution (and remove it from validNums)
-        /// Returns true if such a single valid number was found, else false
-        /// </summary>
-        /// <param name="solution"></param>
-        /// <param name="validNums"></param>
-        /// <returns></returns>
-        private bool FindValidNumbersAndSingleValueCells(int[,] solution, bool[,,] validNums)
-        {
-            // Is any solution found by this method
-            bool isAnyCellSolved = false;
-
-            // For every row of the sudoku
-            for (int m = 0; m < solution.GetLength(0); m++)
-            {
-                // For every column, on every row. ie every cell
-                for (int n = 0; n < solution.GetLength(1); n++)
-                {
-                    // If no single valid number has yet been determined for this cell, look for said number
-                    if (solution[m, n] == 0)
-                    {
-                        // Debug statement, TODO remove
-                        Debug.WriteLine($"SudokuSolver: FindValidNumbers() looking at cell [{m}, {n}]");
-
-                        // Get all valid numbers for the current cell
-                        bool[] validNumsCell = GetValidNumbers(m, n, solution);
-
-                        // Go over the valid numbers
-                        bool? isSingle = null;
-                        for (int i = 0; i < validNumsCell.Length; i++)
-                        {
-                            // If a number is valid
-                            if (validNumsCell[i])
-                            {
-                                // If this number is encountered for the first time, isSingle will be null, and as a result isSingle be changed to true
-                                // If the number has been encountered already, isSingle will no longer be null, but true, and isSingle will be set to false
-                                isSingle = isSingle == null;
-                            }
-
-                            // Also, store the valid number(s) for this cell in the grid-wide array, for later reference
-                            validNums[m, n, i] = validNumsCell[i];
-                        }
-
-                        // If not a single valid number was found for the cell, set its value to -1 to signify this failure (should not happen, unless the grid does not have a solution, or something else went wrong)
-                        if (isSingle == null)
-                        {
-                            Debug.WriteLine($"SudokuSolver: FindValidNumbers() could not find a solution for cell [{m}, {n}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                            solution[m, n] = -1;
-                        }
-                        // If a single value was found for the cell
-                        else if (isSingle == true)
-                        {
-                            // For each number for the current cell in validNums, see if it is the valid number
-                            for (int num = 0; num < validNums.GetLength(2); num++)
-                            {
-                                // If it is the valid number
-                                if (validNums[m, n, num])
-                                {
-                                    Debug.WriteLine($"SudokuSolver: FindValidNumbers() solution found! cell [{m}, {n}] = {num + 1}");
-
-                                    EnterSolution(m, n, num, solution, validNums);
-
-                                    // Log that at least one cell was solved in this iteration
-                                    isAnyCellSolved = true;
-
-                                    // The number was found, the remaining numbers will all be false, so break
-                                    break;
-                                }
-                            }
-                        }
-                        // Else multiple solutions were found
-                        else
-                        {
-                            // Debug, TODO remove
-                            string validNumsString = "";
-                            for (int debugI = 0; debugI < validNumsCell.Length; debugI++)
-                            {
-                                validNumsString += $"{debugI + 1}={validNumsCell[debugI]} ";
-                            }
-                            Debug.WriteLine($"SudokuSolver: FindValidNumbers() cell[{m}, {n}], possible solution are; {validNumsString}");
-                        }
-                    }
-                    // Else this cell contains a starting value, or a solution was already found for this cell. Either way, no other number is valid
-                    else
-                    {
-                        // Set all numbers at the cell [m, n] to false
-                        for (int x = 0; x < validNums.GetLength(2); x++)
-                        {
-                            validNums[m, n, x] = false;
-                        }
-                    }
-                }
-            }
-
-            return isAnyCellSolved;
-        }
 
 
         /// <summary>
@@ -963,7 +683,7 @@ namespace Sudoku
             }
 
             // Is any alteration for validNums found by this method
-            bool isAnyAlterationMade = false;
+            bool isAnyCellAltered = false;
 
             // Look at every region and check if a number in that region has to be within a single row or column in that region
             // This would mean that that number can not appear elsewhere in the same row or column outside of that region, eliminating those possibilities
@@ -1076,13 +796,11 @@ namespace Sudoku
                         // If a single row was found
                         if (rowIndex[0] > -1)
                         {
-                            RemoveValidNumbersFromRowExcludingLocalRegion(rowIndex[0], rowIndex[1], num, validNums);
-                            isAnyAlterationMade = true;
+                            isAnyCellAltered = RemoveValidNumbersFromRowExcludingLocalRegion(rowIndex[0], rowIndex[1], num, validNums);
                         }
                         else if (columnIndex[0] > -1)
                         {
-                            RemoveValidNumbersFromColumnExcludingLocalRegion(columnIndex[0], columnIndex[1], num, validNums);
-                            isAnyAlterationMade = true;
+                            isAnyCellAltered = RemoveValidNumbersFromColumnExcludingLocalRegion(columnIndex[0], columnIndex[1], num, validNums);
                         }
                     }
 
@@ -1090,7 +808,9 @@ namespace Sudoku
                 }
             }
 
-            return isAnyAlterationMade;
+            if (!isAnyCellAltered) { Debug.WriteLine("SudokuSolver: FindValuesLimitedToSingleRowOrColumnOfRegions() did not find anything to help further the solution"); }
+
+            return isAnyCellAltered;
         }
 
 
@@ -1129,50 +849,71 @@ namespace Sudoku
 
         /// <summary>
         /// Set the number 'number' to not be a valid number on all the cells in same the row, excluding those cells in the same region as cell [m, n]
+        /// Returns whether any cells were true and are now set to false. True if so, false if not
         /// </summary>
         /// <param name="m"></param>
         /// <param name="n"></param>
         /// <param name="number"></param>
         /// <param name="validNums"></param>
-        private void RemoveValidNumbersFromRowExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
+        /// <returns></returns>
+        private bool RemoveValidNumbersFromRowExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
         {
             Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromRowExcludingLocalRegion() deleting {number + 1} from cells connected to [{m}, {n}]");
+
+            bool isAnyCellAltered = false;
 
             for (int i = 0; i < validNums.GetLength(0); i++)
             {
                 // If the current n-coor (i) is not in the local region
                 if (n / RegionDim != i / RegionDim)
                 {
-                    Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromRowExcludingLocalRegion() deleting {number + 1} from [{m}, {i}]");
+                    if (validNums[m, i, number])
+                    {
+                        Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromRowExcludingLocalRegion() deleting {number + 1} from [{m}, {i}]");
 
-                    // Set the number to false for this cell
-                    validNums[m, i, number] = false;
+                        // Set the number to false for this cell
+                        validNums[m, i, number] = false;
+                        isAnyCellAltered = true;
+                    }
                 }
             }
+
+            return isAnyCellAltered;
         }
 
         /// <summary>
         /// Set the number 'number' to not be a valid number on all the cells in same the column, excluding those cells in the same region as cell [m, n]
+        /// Returns whether any cells were true and are now set to false. True if so, false if not
         /// </summary>
         /// <param name="m"></param>
         /// <param name="n"></param>
         /// <param name="number"></param>
         /// <param name="validNums"></param>
-        private void RemoveValidNumbersFromColumnExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
+        /// <returns></returns>
+        private bool RemoveValidNumbersFromColumnExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
         {
             Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromColumnExcludingLocalRegion() deleting {number + 1} from cells connected to [{m}, {n}]");
+
+            bool isAnyCellAltered = false;
 
             for (int i = 0; i < validNums.GetLength(0); i++)
             {
                 // If the current m-coor (i) is not in the local region
                 if (m / RegionDim != i / RegionDim)
                 {
-                    Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromColumnExcludingLocalRegion() deleting {number + 1} from [{i}, {n}]");
+                    if (validNums[i, n, number])
+                    {
+                        Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromColumnExcludingLocalRegion() deleting {number + 1} from [{i}, {n}]");
 
-                    // Set the number to false for this cell
-                    validNums[i, n, number] = false;
+                        // Set the number to false for this cell
+                        validNums[i, n, number] = false;
+                        isAnyCellAltered = true;
+                    }
+                    
                 }
             }
+
+            return isAnyCellAltered;
         }
 
 
@@ -1183,6 +924,15 @@ namespace Sudoku
 
 
 
+        /// <summary>
+        /// Enter a found solution value for a cell into the solution grid
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="n"></param>
+        /// <param name="num">number to enter, minus 1! So if you want to enter 3, 'num' must be 2. This is because this method will most likely be called with an index representing the actual number, so coming from a 0-base set instead of a 1-base</param>
+        /// <param name="solution"></param>
+        /// <param name="validNums"></param>
+        /// <param name="debugMessage"></param>
         private void EnterSolution(int m, int n, int num, int[,] solution, bool[,,] validNums, string debugMessage = "")
         {
             Debug.WriteLine($"SudokuSolver: EnterSolution() solution entered, [{m}, {n}] =  {num + 1}");

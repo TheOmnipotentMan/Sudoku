@@ -864,7 +864,7 @@ namespace Sudoku
         {
             if (SudokuStorage.Count > 0)
             {
-                LoadNewSudokuToGrid(SudokuStorage[0].Categories[0].Items[0].Grid);
+                StartNewSudoku(0, 3, 2);
             }
         }
 
@@ -947,8 +947,9 @@ namespace Sudoku
             }            
         }
 
-        private void LoadSudokutoPlayGridButton_Click(object sender, RoutedEventArgs e)
+        private void LoadSudokuToPlayGridButton_Click(object sender, RoutedEventArgs e)
         {
+
             StartNewSudoku(SelectedSudokuStorageIndex[0], SelectedSudokuStorageIndex[1], SelectedSudokuStorageIndex[2]);
             MainPagePivot.SelectedIndex = 0;
         }
@@ -1008,7 +1009,5 @@ namespace Sudoku
                     }
             }
         }
-
-        
     }
 }

@@ -55,8 +55,8 @@ Any further elements can be either included or left out, but must always be in t
 
 <SudokuStorage xmlns="SudStorSchema.xsd">
 
-  <!-- Standard Storage -->
-  <Storage Name="Sudoku.Cool" Source="sudoku.cool">
+  <!-- Sudoku.Cool Storage -->
+  <Storage Name="SudokuStorage.xml" Source="sudoku.cool">
     
     
     <!-- Beginner -->

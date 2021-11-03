@@ -284,60 +284,47 @@ namespace Sudoku
 
 
 
-
-        /* OLD, TODO remove
-
         //  --------------------------------------------------------------
-        //  ----------------         XML METHODS          ----------------
+        //  ----------------        JSON METHODS          ----------------
         //  --------------------------------------------------------------
 
-        /// <summary>
-        /// Get a specified sudoku
-        /// </summary>
-        /// <param name="iStorage">Storage index</param>
-        /// <param name="iCategory">Category index</param>
-        /// <param name="iItem">Item (sudoku) index</param>
-        /// <returns></returns>
-        public int[,] GetSudoku(int iStorage, int iCategory, int iItem)
+        public List<StorageGroup> GetContentFromJsonFile(string path)
         {
-            return Storages[iStorage].Categories[iCategory].Items[iItem].Grid;
+            // Content to return
+            List<StorageGroup> content = new List<StorageGroup>();
+
+
+
+
+
+
+            return content;
         }
 
-        /// <summary>
-        /// Get a random sudoku
-        /// </summary>
-        /// <returns></returns>
-        public int[,] GetSudokuRandom()
+
+        public bool AddContentToJsonFile(StorageGroup storageGroup)
         {
-            int i1 = rand.Next(Storages.Count);
-            int i2 = rand.Next(Storages[i1].Categories.Count);
-            int i3 = rand.Next(Storages[i1].Categories[i2].Items.Count);
-            return Storages[i1].Categories[i2].Items[i3].Grid;
+            // Is this method succesfull or not
+            bool isSuccesfull = false;
+
+
+
+
+
+
+
+
+
+            return isSuccesfull;
         }
 
-        /// <summary>
-        /// Write all the content of Storages to the output, debug
-        /// </summary>
-        public void DebugPrintStoragesContentToOutput()
-        {
-            
-            for (int curStor = 0; curStor < Storages.Count; curStor++)
-            {
-                Debug.WriteLine($"SudokuSource: DebugPrintStoragesContentToOutput(), storage {curStor}, name = {Storages[curStor].Name}, source = {Storages[curStor].Source}, content# = {Storages[curStor].Categories.Count}");
 
-                for (int curCat = 0; curCat < Storages[curStor].Categories.Count; curCat++)
-                {
-                    Debug.WriteLine($"SudokuSource: DebugPrintStoragesContentToOutput(), category {curCat}, name = {Storages[curStor].Categories[curCat].Name}, content# = {Storages[curStor].Categories[curCat].Items.Count}");
 
-                    for (int curItem = 0; curItem < Storages[curStor].Categories[curCat].Items.Count; curItem++)
-                    {
-                        Debug.WriteLine($"SudokuSource: DebugPrintStoragesContentToOutput(), item {curItem}, name = {Storages[curStor].Categories[curCat].Items[curItem].Name}, content = {Storages[curStor].Categories[curCat].Items[curItem].GridAsString()}");
-                    }
-                }
-            }
-        }
 
-        */
+
+
+
+
 
 
 
