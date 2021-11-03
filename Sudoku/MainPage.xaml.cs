@@ -859,9 +859,18 @@ namespace Sudoku
         // ----------------------      Events      -------------------------
         // -----------------------------------------------------------------
 
+        // Load the specified sudoku to grid, for quick loading of the same sudoku when debugging/testin
+        private void LoadSpecificSudokuButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SudokuStorage.Count > 0)
+            {
+                LoadNewSudokuToGrid(SudokuStorage[0].Categories[0].Items[0].Grid);
+            }
+        }
+
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"MainPage: TestButton_Click() Sudoku = {SudokuAsString()}");
+            // Debug.WriteLine($"MainPage: TestButton_Click() Sudoku = {SudokuAsString()}");            
         }
 
         private void Test2Button_Click(object sender, RoutedEventArgs e)
@@ -1000,5 +1009,6 @@ namespace Sudoku
             }
         }
 
+        
     }
 }

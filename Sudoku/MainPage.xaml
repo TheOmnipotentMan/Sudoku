@@ -407,8 +407,10 @@
                             
                             
                         </Grid>
-                        
-                        
+
+
+                        <Button x:Name="LoadSpecificSudokuButton" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top" Width="100" Height="60" Margin="0 40"
+                                Content="LOAD" FontSize="30" Click="LoadSpecificSudokuButton_Click"/>
                         <Button x:Name="TestButton" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="100" Height="60" Margin="0 0 0 120"
                                 Content="TEST" FontSize="30" Click="TestButton_Click"/>
                         <Button x:Name="Test2Button" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Width="100" Height="60" Margin="0 120 0 0"
