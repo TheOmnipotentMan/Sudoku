@@ -1,6 +1,9 @@
-﻿namespace Sudoku
+﻿using System;
+using System.Collections.Generic;
+
+namespace Sudoku
 {
-    class JsonItem
+    class JsonItem2
     {
         public string StorageName { get; set; }
         public string Source { get; set; }
@@ -13,7 +16,7 @@
         public string Grid { get; set; }
 
 
-        public JsonItem()
+        public JsonItem2()
         {
             StorageName = "DefaultStorage";
             Source = "";
@@ -34,7 +37,7 @@
                 "876"+"543"+"210";
         }
 
-        public JsonItem(string storageName, string category, string grid)
+        public JsonItem2(string storageName, string category, string grid)
         {
             StorageName = storageName;
             Category = category;
@@ -47,7 +50,7 @@
             Rating = 0;
         }
 
-        public JsonItem(string storageName, string source, string category, string itemName, bool isCompleted, bool isBookmarked, int rating, string grid)
+        public JsonItem2(string storageName, string source, string category, string itemName, bool isCompleted, bool isBookmarked, int rating, string grid)
         {
             StorageName = storageName;
             Source = source;
@@ -61,10 +64,26 @@
     }
 
 
-    class JsonItem2
+    class JsonStorageGroup
     {
-
+        public string StorageName { get; set; }
+        public string Source { get; set; }
+        public List<JsonCategory> Categories { get; set; }
     }
 
+    class JsonCategory
+    {
+        public string Name { get; set; }
+        public List<JsonItem> Items { get; set; }
+    }
+
+    class JsonItem
+    {
+        public string Name { get; set; }
+        public bool Completed { get; set; }
+        public bool Bookmarked { get; set; }
+        public int Rating { get; set; }
+        public string Grid { get; set; }
+    }
 
 }

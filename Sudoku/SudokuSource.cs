@@ -323,6 +323,12 @@ namespace Sudoku
         }
 
 
+        /// <summary>
+        /// Add the specified storage collection to the default json file
+        /// Currently not working, WriteToJson() is able to serialize but not actually write to file
+        /// </summary>
+        /// <param name="storage"></param>
+        /// <returns></returns>
         public bool AddContentToJsonFile(List<StorageGroup> storage)
         {
             // Is this method succesfull or not
@@ -346,13 +352,11 @@ namespace Sudoku
             }
 
             // Make sure the file is valid, else return
-            /*
             if (!File.Exists(jsonFileName) || !(jsonFileName.Substring(jsonFileName.Length - 5) == ".json"))
             {
                 Debug.WriteLine($"SudokuSource: AddContentToJsonFile() no existing json file found! Please create the file");
-                return isSuccesfull;
+                //return isSuccesfull;
             }
-            */
 
             // Writing (serialising) options
             var options = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
@@ -364,15 +368,48 @@ namespace Sudoku
         }
 
         
-        private async Task<bool> WriteToJson(string path, List<StorageGroup> storage, JsonSerializerOptions options)
+        /// <summary>
+        /// Write the 'storage' collection to file.
+        /// Currently, writing to file is not funtional, so actually writing to file is not possible. But serialization is
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="storage"></param>
+        /// <param name="options"></param>
+        private void WriteToJson(string path, List<StorageGroup> storage, JsonSerializerOptions options)
         {
-            bool isSuccesfull = false;
+            // Copy the content from 'storage' over to 
+            List<JsonStorageGroup> jsonStorages = new List<JsonStorageGroup>();
+            foreach (StorageGroup storageGroup in storage)
+            {
+                jsonStorages.Add(new JsonStorageGroup());
+                jsonStorages.Last().StorageName = storageGroup.Name;
+                jsonStorages.Last().Source = storageGroup.Source;
+                jsonStorages.Last().Categories = new List<JsonCategory>();
 
-            string jsonString = JsonSerializer.Serialize(storage, options);
+                foreach (Category category in storageGroup.Categories)
+                {
+                    jsonStorages.Last().Categories.Add(new JsonCategory());
+                    jsonStorages.Last().Categories.Last().Name = category.Name;
+                    jsonStorages.Last().Categories.Last().Items = new List<JsonItem>();
+
+                    foreach (Item item in category.Items)
+                    {
+                        jsonStorages.Last().Categories.Last().Items.Add(new JsonItem());
+                        jsonStorages.Last().Categories.Last().Items.Last().Name = item.Name;
+                        jsonStorages.Last().Categories.Last().Items.Last().Completed = item.Completed;
+                        jsonStorages.Last().Categories.Last().Items.Last().Bookmarked = item.Bookmarked;
+                        jsonStorages.Last().Categories.Last().Items.Last().Rating = item.Rating;
+                        jsonStorages.Last().Categories.Last().Items.Last().Grid = item.GridAsStringJson;
+                    }
+                }
+            }
+
+            string jsonString = JsonSerializer.Serialize(jsonStorages, options);
             Debug.WriteLine($"SudokuSource: WriteToJson() serialized -->");
             Debug.WriteLine(jsonString);
 
-            return isSuccesfull;
+
+            File.WriteAllText(path, jsonString);
         }
 
         #endregion JSON_METHODS

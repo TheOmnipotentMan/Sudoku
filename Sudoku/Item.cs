@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 
@@ -16,19 +15,13 @@ namespace Sudoku
     /// </summary>
     public class Item
     {
-        [JsonInclude]
         public string Name { get; set; }
-        [JsonInclude]
         public bool Completed { get; set; }
-        [JsonInclude]
         public bool Bookmarked { get; set; }
-        [JsonInclude]
         public int Rating { get; set; }
 
-        [JsonIgnore]
         private int[,] grid;
 
-        [JsonIgnore]
         public string GridAsString
         {
             get
@@ -58,7 +51,6 @@ namespace Sudoku
             }
         }
 
-        [JsonInclude]
         public string GridAsStringJson
         {
             get

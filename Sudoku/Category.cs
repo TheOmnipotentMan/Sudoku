@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-using System.Text.Json.Serialization;
-
 
 
 
@@ -20,10 +18,8 @@ namespace Sudoku
     public class Category
     {
 
-        [JsonInclude]
         public string Name { get; set; }
 
-        [JsonInclude]
         public List<Item> Items { get; set; }
 
         /// <summary>
