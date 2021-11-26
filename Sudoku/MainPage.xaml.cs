@@ -57,17 +57,6 @@ namespace Sudoku
         private int SudokuAllowedLength1 = 9;
 
 
-        /*
-        /// <summary>
-        /// The starting grid of the current sudoku, starting state
-        /// </summary>
-        private int[,] SudokuStart = new int[9, 9];
-
-        /// <summary>
-        /// The current state of the sudoku, cell values, must be 9x9 to ensure conformity with the UI
-        /// </summary>
-        private int[,] Sudoku = new int[9, 9];
-        */
 
         /// <summary>
         /// The index values of currently selected sudoku from storage
@@ -120,6 +109,7 @@ namespace Sudoku
 
             InstantiateSudokuSource();
             ImportSudokusFromXmlFile();
+            InstaniateStorageInputGridCells();
         }
 
 
@@ -132,6 +122,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // --------------      Instantiating methods      ------------------
         // -----------------------------------------------------------------
+        #region INST_METHODS
 
         /// <summary>
         /// Create a new SudokuSource
@@ -172,7 +163,7 @@ namespace Sudoku
         /// Create the UI elements to hold the values of the sudoku grid in storage
         /// </summary>
         private void InstantiateSudokuStorageGridCells()
-        {            
+        {
             SudokuStorageGrid.Children.Clear();
 
             for (int m = 0; m < Sudoku.M; m++)
@@ -186,6 +177,22 @@ namespace Sudoku
             }
         }
 
+        private void InstaniateStorageInputGridCells()
+        {
+            StorageInputGrid.Children.Clear();
+
+            for (int m = 0; m < Sudoku.M; m++)
+            {
+                for (int n = 0; n < Sudoku.N; n++)
+                {
+                    StorageInputGrid.Children.Add(new TextBox() { Text = string.Empty, FontSize = SudokuGridFontSize, FontWeight = StartingValueFontWeight, TextAlignment = 0, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch, Margin = new Thickness(4) });
+                    StorageInputGrid.Children.Last().SetValue(Grid.RowProperty, m);
+                    StorageInputGrid.Children.Last().SetValue(Grid.ColumnProperty, n);
+                }
+            }
+        }
+
+        #endregion INST_METHODS
 
 
 
@@ -195,8 +202,9 @@ namespace Sudoku
 
 
         // -----------------------------------------------------------------
-        // --------------      Sudoku Grid Handeling      ------------------
+        // --------------      Sudoku Grid Handling      ------------------
         // -----------------------------------------------------------------
+        #region GRID_HANDLING_METHODS
 
         /// <summary>
         /// Process the input on the sudoku grid from the player
@@ -289,14 +297,14 @@ namespace Sudoku
             }
         }
 
-        private async void GetSolution()
+        private async void GetSolution(bool useGuessOnDeadEnd = false)
         {
-            Debug.WriteLine($"MainPage: GetSolution() starting");
+            Debug.WriteLine($"MainPage: GetSolution() starting, guessing = {useGuessOnDeadEnd}");
 
             // Start progress-ring to signal that the solution is being worked on
             SolveProgressRing.IsActive = true;
             
-            int[,] solution = await Sudoku.GetSolution();
+            int[,] solution = await Sudoku.GetSolution(useGuessOnDeadEnd);
 
             Debug.WriteLine($"MainPage: GetSolution() got solution");
 
@@ -315,14 +323,7 @@ namespace Sudoku
             SolveProgressRing.IsActive = false;
         }
 
-        
-
-
-
-
-
-
-
+        #endregion GRID_HANDLING_METHODS
 
 
 
@@ -334,6 +335,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // ---------------- SudokuSource, File, handeling   ----------------
         // -----------------------------------------------------------------
+        #region SOURCE_METHODS
 
         /// <summary>
         /// Import Sudokus from the specified xml file
@@ -368,7 +370,7 @@ namespace Sudoku
             ReloadStorageTreeView();
         }
 
-
+        #endregion SOURCE_METHODS
 
 
 
@@ -380,6 +382,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // --------------------     Opening Sudoku      --------------------
         // -----------------------------------------------------------------
+        #region OPEN_SUDOKU_METHODS
 
         /// <summary>
         /// Start a sudoku from SudokuStorage, with the specified storage, category, item index
@@ -433,8 +436,7 @@ namespace Sudoku
             LoadNewSudokuToGrid(Sudoku.Grid);
         }
 
-
-
+        #endregion OPEN_SUDOKU_METHODS
 
 
 
@@ -444,8 +446,9 @@ namespace Sudoku
 
 
         // -----------------------------------------------------------------
-        // ----------     Sudoku Grid (UI grid) manipulation    ----------
+        // ----------      Sudoku Grid (UI grid) manipulation     ----------
         // -----------------------------------------------------------------
+        #region UI_PLAY_GRID_METHODS
 
         /// <summary>
         /// Load a new sudoku to play
@@ -586,10 +589,7 @@ namespace Sudoku
             SudokuGrid.Children.ElementAt(m * Sudoku.N + n).SetValue(TextBlock.TextProperty, value == "0" ? string.Empty : value.ToString());
         }
 
-
-
-
-
+        #endregion UI_PLAY_GRID_METHODS
 
 
 
@@ -601,6 +601,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // --------     Sudoku Storage Grid, UI, manipulation      ---------
         // -----------------------------------------------------------------
+        #region UI_STORAGE_GRID_METHODS
 
         /// <summary>
         /// Load a sudoku, from storage, to the StorageGrid
@@ -642,6 +643,7 @@ namespace Sudoku
             }
         }
 
+        #endregion UI_STORAGE_GRID_METHODS
 
 
 
@@ -653,6 +655,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // --------------      UI elements manipulation      ---------------
         // -----------------------------------------------------------------
+        #region UI_ELEMENT_METHODS
 
         /// <summary>
         /// Read entire SudokuStorage collection to StorageTreeView
@@ -771,12 +774,7 @@ namespace Sudoku
             MessageTextBlock.Text = message;
         }
 
-
-
-
-
-
-
+        #endregion UI_ELEMENT_METHODS
 
 
 
@@ -788,6 +786,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // -------------------      Helper Methods      --------------------
         // -----------------------------------------------------------------
+        #region HELPER_METHODS
 
         /// <summary>
         /// Get the current sudoku as a single string
@@ -826,7 +825,7 @@ namespace Sudoku
 
                     for (int curItem = 0; curItem < SudokuStorage[curStor].Categories[curCat].Items.Count; curItem++)
                     {
-                        Debug.WriteLine($"SudokuSource: DebugPrintStoragesContentToOutput(), item {curItem}, name = {SudokuStorage[curStor].Categories[curCat].Items[curItem].Name}, content = {SudokuStorage[curStor].Categories[curCat].Items[curItem].GridAsString()}");
+                        Debug.WriteLine($"SudokuSource: DebugPrintStoragesContentToOutput(), item {curItem}, name = {SudokuStorage[curStor].Categories[curCat].Items[curItem].Name}, content = {SudokuStorage[curStor].Categories[curCat].Items[curItem].GridAsString}");
                     }
                 }
             }
@@ -843,7 +842,7 @@ namespace Sudoku
             return Math.Sqrt(x) % 1 == 0;
         }
 
-
+        #endregion HELPER_METHODS
 
 
 
@@ -858,6 +857,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // ----------------------      Events      -------------------------
         // -----------------------------------------------------------------
+        #region EVENT_METHODS
 
         // Load the specified sudoku to grid, for quick loading of the same sudoku when debugging/testin
         private void LoadSpecificSudokuButton_Click(object sender, RoutedEventArgs e)
@@ -870,18 +870,33 @@ namespace Sudoku
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            // Debug.WriteLine($"MainPage: TestButton_Click() Sudoku = {SudokuAsString()}");            
+            GetSolution(true);
         }
 
         private void Test2Button_Click(object sender, RoutedEventArgs e)
         {
-            LoadNewSudokuToGrid(new int[81] { 6,0,5,9,0,0,0,0,0,7,0,8,0,0,2,9,0,6,2,1,9,8,6,3,5,4,7,0,7,0,3,9,0,0,5,0,8,9,3,0,0,0,7,0,0,0,5,0,0,0,0,0,9,3,3,6,1,7,8,5,4,2,9,9,8,7,2,3,4,1,6,5,5,2,4,6,1,9,3,7,8 });
+            int[,] grid = new int[9, 9];
+            int[,] grid2 = new int[9, 9];
+            for (int m = 0; m < grid.GetLength(0); m++)
+            {
+                for (int n = 0; n < grid.GetLength(1); n++)
+                {
+                    grid[m, n] = (m + n) % 9;
+                    grid2[m, n] = n;
+                }
+            }
+
+            List<StorageGroup> storage = new List<StorageGroup>();
+            storage.Add(new StorageGroup("JsonTestGroup", "JsonTestSource"));
+            storage[0].AddCategory("JsonTestCategory");
+            storage[0].Categories[0].AddItem(grid, "JsonTestItem");
+
+            SudokuSource.AddContentToJsonFile(SudokuStorage);
         }
 
-        // Use SudokuCellButtonsGridView_SelectionChanged() instead, click happens before GridView.SelectedIndex has updated (event is not bound)
         private void SudokuCellButtonsGridView_Click(object sender, ItemClickEventArgs e)
         {
-            // Click event is too quick for SelectedIndex to be updated
+            // Click event is too quick for SelectedIndex to be updated, click happens before GridView.SelectedIndex has updated, use SudokuCellButtonsGridView_SelectionChanged() instead
             // Debug.WriteLine($"MainPage: SudokuCellButtonsGridView_Click() {SudokuCellButtonsGridView.SelectedIndex}");
         }
 
@@ -949,9 +964,18 @@ namespace Sudoku
 
         private void LoadSudokuToPlayGridButton_Click(object sender, RoutedEventArgs e)
         {
-
             StartNewSudoku(SelectedSudokuStorageIndex[0], SelectedSudokuStorageIndex[1], SelectedSudokuStorageIndex[2]);
             MainPagePivot.SelectedIndex = 0;
+        }
+
+        private void MoveToAddSudokuButton_Click(object sender, RoutedEventArgs e)
+        {
+            MainPagePivot.SelectedIndex = 2;
+        }
+
+        private void AddSudokuToStorageButton_Click(object sender, RoutedEventArgs e)
+        {
+            
         }
 
         private void RestartButton_Click(object sender, RoutedEventArgs e)
@@ -1009,5 +1033,13 @@ namespace Sudoku
                     }
             }
         }
+
+        
+
+
+
+        #endregion EVENT_METHODS
+
+
     }
 }

@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+using System.Text.Json.Serialization;
+
+
+
 namespace Sudoku
 {
     /// <summary>
@@ -11,10 +16,13 @@ namespace Sudoku
     /// </summary>
     public class StorageGroup
     {
-        public string Name;
-        public string Source;
+        [JsonInclude]
+        public string Name { get; set; }
+        [JsonInclude]
+        public string Source { get; set; }
 
-        public List<Category> Categories;
+        [JsonInclude]
+        public List<Category> Categories { get; set; }
 
 
 
@@ -124,7 +132,5 @@ namespace Sudoku
                 return true;
             }
         }
-
-
     }
 }

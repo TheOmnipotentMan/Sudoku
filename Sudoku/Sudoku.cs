@@ -86,7 +86,7 @@ namespace Sudoku
 
 
 
-        
+
 
 
 
@@ -96,6 +96,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // -------------------      Grid Creation      ---------------------
         // -----------------------------------------------------------------
+        #region GRID_CREATION_METHODS
 
         /// <summary>
         /// Load a new grid
@@ -137,9 +138,7 @@ namespace Sudoku
             Grid = (int[,])StartGrid.Clone();
         }
 
-
-
-
+        #endregion GRID_CREATION_METHODS
 
 
 
@@ -151,6 +150,19 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // --------------------      Grid Gets      ------------------------
         // -----------------------------------------------------------------
+        #region GRID_GET_METHODS
+
+        /// <summary>
+        /// Get the solution for the currently active sudoku
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int[,]> GetSolution(bool useGuessOnDeadEnd = false)
+        {
+            // Make sure a grid is available to solve
+            if (!GridContainsValues(StartGrid)) { return StartGrid; }
+            int[,] solution = await Task.Run(() => Solver.SolveHomeBrew(StartGrid, useGuessOnDeadEnd));
+            return solution;
+        }
 
         /// <summary>
         /// Get the length of the specified dimension dim of the current sudoku grid (array)
@@ -197,19 +209,7 @@ namespace Sudoku
             return Solver.GetValidNumbers(m, n, Grid);
         }
 
-        /// <summary>
-        /// Get the solution for the currently active sudoku
-        /// </summary>
-        /// <returns></returns>
-        public async Task<int[,]> GetSolution()
-        {
-            int[,] solution = await Task.Run(() => Solver.SolveHomeBrew(StartGrid));
-            return solution;
-        }
-
-
-
-
+        #endregion GRID_GET_METHODS
 
 
 
@@ -221,6 +221,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // -----------------      Cell Validation      ---------------------
         // -----------------------------------------------------------------
+        #region CELL_VALIDATION_METHODS
 
         /// <summary>
         /// Check whether the number v in valid in the cell at coors m, n
@@ -332,6 +333,7 @@ namespace Sudoku
             return true;
         }
 
+        #endregion CELL_VALIDATION_METHODS
 
 
 
@@ -343,6 +345,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // ---------------      Sequence Validation      -------------------
         // -----------------------------------------------------------------
+        #region SEQUENCE_VALIDATION_METHODS
 
         /// <summary>
         /// Check whether the current grid, with all its current values, is valid
@@ -363,7 +366,7 @@ namespace Sudoku
                         break;
                     }
                 }
-            }            
+            }
 
             // For each column of the grid
             if (isValid)
@@ -376,7 +379,7 @@ namespace Sudoku
                         break;
                     }
                 }
-            }            
+            }
 
             // For each region of the grid
             if (isValid)
@@ -497,17 +500,7 @@ namespace Sudoku
             return result;
         }
 
-
-
-
-
-
-
-
-
-
-
-
+        #endregion SEQUENCE_VALIDATION_METHODS
 
 
 
@@ -519,6 +512,7 @@ namespace Sudoku
         // -----------------------------------------------------------------
         // -------------------      Helper Methods      --------------------
         // -----------------------------------------------------------------
+        #region HELPER_METHODS
 
         /// <summary>
         /// Is the square root of x a whole number
@@ -531,13 +525,24 @@ namespace Sudoku
             return Math.Sqrt(x) % 1 == 0;
         }
 
-
-
-
-        public void Test()
+        /// <summary>
+        /// Does the grid contain any value larger than 0
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <returns></returns>
+        private bool GridContainsValues(int[,] grid)
         {
-            
+            for (int m = 0; m < grid.GetLength(0); m++)
+            {
+                for  (int n = 0; n < grid.GetLength(1); n++)
+                {
+                    if (grid[m, n] > 0) { return true; }
+                }
+            }
+            return false;
         }
+
+        #endregion HELPER_METHODS
 
     }
 }

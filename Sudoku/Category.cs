@@ -4,6 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+using System.Text.Json.Serialization;
+
+
+
+
+
 namespace Sudoku
 {
     /// <summary>
@@ -12,12 +19,12 @@ namespace Sudoku
     /// </summary>
     public class Category
     {
-        /// <summary>
-        /// Name of this categ
-        /// </summary>
-        public string Name;
 
-        public List<Item> Items;
+        [JsonInclude]
+        public string Name { get; set; }
+
+        [JsonInclude]
+        public List<Item> Items { get; set; }
 
         /// <summary>
         /// Create a new category

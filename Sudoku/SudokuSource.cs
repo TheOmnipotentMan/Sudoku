@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 
+using System.IO;
 using System.Xml;
-using System.Xml.XPath;
+using System.Text.Json;
 using System.Diagnostics;
 
 
@@ -39,6 +40,8 @@ namespace Sudoku
 
         public List<StorageGroup> Storages;
 
+        private string jsonFileName = "SudokuStorage.json";
+
 
 
 
@@ -63,7 +66,7 @@ namespace Sudoku
 
 
 
-        
+
 
 
 
@@ -77,6 +80,7 @@ namespace Sudoku
         //  --------------------------------------------------------------
         //  ----------------        PREFAB METHODS        ----------------
         //  --------------------------------------------------------------
+        #region PREFAB_METHODS
 
         /// <summary>
         /// Internal prefab sudokus, always available, mainly for testing
@@ -108,10 +112,7 @@ namespace Sudoku
             return prefabs.Count;
         }
 
-
-
-
-
+        #endregion PREFAB_METHODS
 
 
 
@@ -123,6 +124,7 @@ namespace Sudoku
         //  --------------------------------------------------------------
         //  ----------------         XML METHODS          ----------------
         //  --------------------------------------------------------------
+        #region XML_METHODS
 
         /// <summary>
         /// Load the specified xml file into the active Storages
@@ -134,7 +136,7 @@ namespace Sudoku
             List<StorageGroup> content = new List<StorageGroup>();
 
             // Make sure the file is valid
-            if (!System.IO.File.Exists(path) || !(path.Substring(path.Length - 4) == ".xml")) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() recieved an invalid file path, {path}"); return content; }
+            if (!File.Exists(path) || !(path.Substring(path.Length - 4) == ".xml")) { Debug.WriteLine($"SudokuSource: LoadXmlFileToStorage() recieved an invalid file path, {path}"); return content; }
 
             // Create an XmlReader for the given file at path
             XmlReaderSettings settings = new XmlReaderSettings();
@@ -278,6 +280,9 @@ namespace Sudoku
             Debug.WriteLine($"SudokuSource: XmlFileValidationCallBack() {args.Severity.ToString()}, {args.Message}");
         }
 
+        #endregion XML_METHODS
+
+
 
 
 
@@ -287,11 +292,27 @@ namespace Sudoku
         //  --------------------------------------------------------------
         //  ----------------        JSON METHODS          ----------------
         //  --------------------------------------------------------------
+        #region JSON_METHODS
 
-        public List<StorageGroup> GetContentFromJsonFile(string path)
+        /// <summary>
+        /// Load the content from the specified Json file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public List<StorageGroup> GetContentFromJsonFile(string path = "")
         {
             // Content to return
             List<StorageGroup> content = new List<StorageGroup>();
+
+            // If no file was specified, use default
+            if (string.IsNullOrWhiteSpace(path)) { path = jsonFileName; }
+
+            // Make sure the file exists, if not return
+            if (!File.Exists(path) || !(path.Substring(path.Length - 5) == ".json"))
+            {
+                Debug.WriteLine($"SudokuSource: AddContentToJsonFile() recieved an invalid file, {path}");
+                return content;
+            }
 
 
 
@@ -302,22 +323,59 @@ namespace Sudoku
         }
 
 
-        public bool AddContentToJsonFile(StorageGroup storageGroup)
+        public bool AddContentToJsonFile(List<StorageGroup> storage)
         {
             // Is this method succesfull or not
             bool isSuccesfull = false;
 
+            // Make sure their is content to write to json
+            if (storage.Count <= 0)
+            {
+                Debug.WriteLine($"SudokuSource: AddContentToJsonFile() storage did not contain any StorageGroups");
+                return isSuccesfull;
+            }
+            else if (storage[0].Categories.Count <= 0)
+            {
+                Debug.WriteLine($"SudokuSource: AddContentToJsonFile() storageGroup did not contain any Categories");
+                return isSuccesfull;
+            }
+            else if (storage[0].Categories[0].Items.Count <= 0)
+            {
+                Debug.WriteLine($"SudokuSource: AddContentToJsonFile() storageGroup.Categories did not contain any Items");
+                return isSuccesfull;
+            }
 
+            // Make sure the file is valid, else return
+            /*
+            if (!File.Exists(jsonFileName) || !(jsonFileName.Substring(jsonFileName.Length - 5) == ".json"))
+            {
+                Debug.WriteLine($"SudokuSource: AddContentToJsonFile() no existing json file found! Please create the file");
+                return isSuccesfull;
+            }
+            */
 
+            // Writing (serialising) options
+            var options = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
 
-
-
-
-
+            // TODO make this async
+            WriteToJson(jsonFileName, storage, options);
 
             return isSuccesfull;
         }
 
+        
+        private async Task<bool> WriteToJson(string path, List<StorageGroup> storage, JsonSerializerOptions options)
+        {
+            bool isSuccesfull = false;
+
+            string jsonString = JsonSerializer.Serialize(storage, options);
+            Debug.WriteLine($"SudokuSource: WriteToJson() serialized -->");
+            Debug.WriteLine(jsonString);
+
+            return isSuccesfull;
+        }
+
+        #endregion JSON_METHODS
 
 
 
@@ -331,8 +389,9 @@ namespace Sudoku
 
 
 
-
-
+        //  --------------------------------------------------------------
+        //  ----------------       HELPER METHODS         ----------------
+        //  --------------------------------------------------------------
 
         /// <summary>
         /// Return the input string without any whitespace
