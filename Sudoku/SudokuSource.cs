@@ -40,8 +40,6 @@ namespace Sudoku
 
         public List<StorageGroup> Storages;
 
-        private string jsonFileName = "SudokuStorage.json";
-
 
 
 
@@ -305,20 +303,29 @@ namespace Sudoku
             List<StorageGroup> content = new List<StorageGroup>();
 
             // If no file was specified, use default
-            if (string.IsNullOrWhiteSpace(path)) { path = jsonFileName; }
+            if (string.IsNullOrWhiteSpace(path)) { path = "SudokuStorage.json"; }
 
             // Make sure the file exists, if not return
             if (!File.Exists(path) || !(path.Substring(path.Length - 5) == ".json"))
             {
                 Debug.WriteLine($"SudokuSource: AddContentToJsonFile() recieved an invalid file, {path}");
+                // return content;
+            }
+
+            // Try to retrieve content from file
+            List<JsonStorageGroup> jsonStorage = new List<JsonStorageGroup>();
+            try
+            {
+                string jsonString = File.ReadAllText(path);
+                jsonStorage = JsonSerializer.Deserialize<List<JsonStorageGroup>>(jsonString);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"SudokuSource: GetContentFromJsonFile() threw exception {e}");
                 return content;
             }
 
-
-
-
-
-
+            content = ConvertJsonCollectionToStorage(jsonStorage);
             return content;
         }
 
@@ -329,10 +336,13 @@ namespace Sudoku
         /// </summary>
         /// <param name="storage"></param>
         /// <returns></returns>
-        public bool AddContentToJsonFile(List<StorageGroup> storage)
+        public bool AddContentToJsonFile(List<StorageGroup> storage, string path = "")
         {
             // Is this method succesfull or not
             bool isSuccesfull = false;
+
+            // If no file was specified, use default
+            if (string.IsNullOrWhiteSpace(path)) { path = "SudokuStorage.json"; }
 
             // Make sure their is content to write to json
             if (storage.Count <= 0)
@@ -352,7 +362,7 @@ namespace Sudoku
             }
 
             // Make sure the file is valid, else return
-            if (!File.Exists(jsonFileName) || !(jsonFileName.Substring(jsonFileName.Length - 5) == ".json"))
+            if (!File.Exists(path) || !(path.Substring(path.Length - 5) == ".json"))
             {
                 Debug.WriteLine($"SudokuSource: AddContentToJsonFile() no existing json file found! Please create the file");
                 //return isSuccesfull;
@@ -361,8 +371,7 @@ namespace Sudoku
             // Writing (serialising) options
             var options = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
 
-            // TODO make this async
-            WriteToJson(jsonFileName, storage, options);
+            WriteToJson(path, storage, options);
 
             return isSuccesfull;
         }
@@ -378,38 +387,92 @@ namespace Sudoku
         private void WriteToJson(string path, List<StorageGroup> storage, JsonSerializerOptions options)
         {
             // Copy the content from 'storage' over to 
-            List<JsonStorageGroup> jsonStorages = new List<JsonStorageGroup>();
-            foreach (StorageGroup storageGroup in storage)
-            {
-                jsonStorages.Add(new JsonStorageGroup());
-                jsonStorages.Last().StorageName = storageGroup.Name;
-                jsonStorages.Last().Source = storageGroup.Source;
-                jsonStorages.Last().Categories = new List<JsonCategory>();
-
-                foreach (Category category in storageGroup.Categories)
-                {
-                    jsonStorages.Last().Categories.Add(new JsonCategory());
-                    jsonStorages.Last().Categories.Last().Name = category.Name;
-                    jsonStorages.Last().Categories.Last().Items = new List<JsonItem>();
-
-                    foreach (Item item in category.Items)
-                    {
-                        jsonStorages.Last().Categories.Last().Items.Add(new JsonItem());
-                        jsonStorages.Last().Categories.Last().Items.Last().Name = item.Name;
-                        jsonStorages.Last().Categories.Last().Items.Last().Completed = item.Completed;
-                        jsonStorages.Last().Categories.Last().Items.Last().Bookmarked = item.Bookmarked;
-                        jsonStorages.Last().Categories.Last().Items.Last().Rating = item.Rating;
-                        jsonStorages.Last().Categories.Last().Items.Last().Grid = item.GridAsStringJson;
-                    }
-                }
-            }
+            List<JsonStorageGroup> jsonStorages = ConvertStorageToJsonReadableCollection(storage);
 
             string jsonString = JsonSerializer.Serialize(jsonStorages, options);
             Debug.WriteLine($"SudokuSource: WriteToJson() serialized -->");
             Debug.WriteLine(jsonString);
 
+            Debug.WriteLine($"SudokuSource: WriteToJson() writing to file not implemented");
 
+            // TODO implement writing to file
+            /*
             File.WriteAllText(path, jsonString);
+            */
+        }
+
+
+        /// <summary>
+        /// Convert the collection of Json-objects, JsonStorageGroup containing JsonCategory containing JsonItem, to the structure of the sudoku storage collection.
+        /// </summary>
+        /// <param name="jsonStorage"></param>
+        /// <returns></returns>
+        private List<StorageGroup> ConvertJsonCollectionToStorage(List<JsonStorageGroup> jsonStorage)
+        {
+            List<StorageGroup> storage = new List<StorageGroup>();
+
+            foreach (JsonStorageGroup jsonSG in jsonStorage)
+            {
+                storage.Add(new StorageGroup(jsonSG.StorageName, jsonSG.Source));
+
+                foreach (JsonCategory jsonCat in jsonSG.Categories)
+                {
+                    storage.Last().Categories.Add(new Category(jsonCat.Name));
+
+                    foreach (JsonItem jsonItem in jsonCat.Items)
+                    {
+                        Item item = new Item
+                        {
+                            Name = jsonItem.Name,
+                            Completed = jsonItem.Completed,
+                            Bookmarked = jsonItem.Bookmarked,
+                            Rating = jsonItem.Rating,
+                            GridAsString = jsonItem.Grid
+                        };
+                        storage.Last().Categories.Last().Items.Add(item);
+                    }
+                }
+            }
+
+            return storage;
+        }
+
+
+        /// <summary>
+        /// Convert a sudoku storage collection to a collection of equivalent objects that are readable by JsonSerializer
+        /// </summary>
+        /// <param name="storage"></param>
+        /// <returns></returns>
+        private List<JsonStorageGroup> ConvertStorageToJsonReadableCollection(List<StorageGroup> storage)
+        {
+            List<JsonStorageGroup> jsonStorage = new List<JsonStorageGroup>();
+            
+            foreach (StorageGroup storageGroup in storage)
+            {
+                jsonStorage.Add(new JsonStorageGroup());
+                jsonStorage.Last().StorageName = storageGroup.Name;
+                jsonStorage.Last().Source = storageGroup.Source;
+                jsonStorage.Last().Categories = new List<JsonCategory>();
+
+                foreach (Category category in storageGroup.Categories)
+                {
+                    jsonStorage.Last().Categories.Add(new JsonCategory());
+                    jsonStorage.Last().Categories.Last().Name = category.Name;
+                    jsonStorage.Last().Categories.Last().Items = new List<JsonItem>();
+
+                    foreach (Item item in category.Items)
+                    {
+                        jsonStorage.Last().Categories.Last().Items.Add(new JsonItem());
+                        jsonStorage.Last().Categories.Last().Items.Last().Name = item.Name;
+                        jsonStorage.Last().Categories.Last().Items.Last().Completed = item.Completed;
+                        jsonStorage.Last().Categories.Last().Items.Last().Bookmarked = item.Bookmarked;
+                        jsonStorage.Last().Categories.Last().Items.Last().Rating = item.Rating;
+                        jsonStorage.Last().Categories.Last().Items.Last().Grid = item.GridAsString;
+                    }
+                }
+            }
+
+            return jsonStorage;
         }
 
         #endregion JSON_METHODS

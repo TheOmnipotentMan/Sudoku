@@ -32,7 +32,7 @@ namespace Sudoku
             }
             set
             {
-                // Currently only digits 0-9 can be handled, as each char represents a field on the grid
+                // Currently only digits 0-9 can be handled, as each char represents a field on the grid, so a value of say 24 will be treated as 2 and 4
                 if (value.Length > 1 && value.Length <= 81 && Math.Sqrt(value.Length) % 1 == 0)
                 {
                     int dimLength = (int)Math.Sqrt(value.Length);
@@ -43,7 +43,7 @@ namespace Sudoku
                         for (int n = 0; n < dimLength; n++)
                         {
                             x = -1;
-                            int.TryParse(value[m * n + n].ToString(), out x);
+                            int.TryParse(value[m * dimLength + n].ToString(), out x);
                             grid[m, n] = x;
                         }
                     }
@@ -51,14 +51,8 @@ namespace Sudoku
             }
         }
 
-        public string GridAsStringJson
+        public string GridAsStringCommaSeperated
         {
-            get
-            {
-                string x = "";
-                foreach (int b in grid) { x += b + ","; }
-                return x;
-            }
             set
             {
                 if (value.Length > 1)
@@ -92,7 +86,55 @@ namespace Sudoku
                     {
                         for (int n = 0; n < dimLength; n++)
                         {
-                            grid[m, n] = values.ElementAt(m * n + n);
+                            grid[m, n] = values.ElementAt(m * dimLength + n);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parse a string with undetermined seperators
+        /// NOT WORKING!!
+        /// </summary>
+        public string GridAsStringWithSeperators
+        {
+            set
+            {
+                if (value.Length > 1)
+                {
+                    List<int> values = new List<int>();
+                    int v;
+                    int start = 0;
+                    // Get all the values from the string, seperated by something that is not a digit
+                    for (int i = 0; i < value.Length; i++)
+                    {
+                        if (!char.IsDigit(value[i]))
+                        {
+                            if (start < i)
+                            {
+                                v = -1;
+                                int.TryParse(value.Substring(start, i - start), out v);
+                                values.Add(v);
+                            }
+                            start = i + 1;
+                        }
+                    }
+
+                    // Log a message if the square root is not a whole number
+                    if (Math.Sqrt(values.Count) % 1 != 0)
+                    {
+                        Debug.WriteLine($"Item: GridAsStringWithSeperators().Set the number of values found does not a whole number as its square root, the values will likely not line up to their intended position and some values might be lost! values.Count = {values.Count}");
+                    }
+
+                    // Set the values to grid
+                    int dimLength = (int)Math.Sqrt(values.Count);
+                    grid = new int[dimLength, dimLength];
+                    for (int m = 0; m < dimLength; m++)
+                    {
+                        for (int n = 0; n < dimLength; n++)
+                        {
+                            grid[m, n] = values.ElementAt(m * dimLength + n);
                         }
                     }
                 }
@@ -120,7 +162,7 @@ namespace Sudoku
         /// <param name="rating"></param>
         public Item(int[,] grid, string name = "", bool completed = false, bool bookmarked = false, int rating = 0)
         {
-            this.grid = grid;
+            this.grid = (int[,])grid.Clone();
 
             Name = name;
             Completed = completed;
@@ -133,6 +175,7 @@ namespace Sudoku
         public int[,] Grid
         {
             get { return (int[,])grid.Clone(); }
+            set { grid = (int[,])value.Clone(); }
         }
 
         

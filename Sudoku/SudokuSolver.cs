@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Sudoku
 {
-    class SudokuSolver
+    public class SudokuSolver
     {
 
 
@@ -40,10 +40,12 @@ namespace Sudoku
 
 
 
+
+
         /// <summary>
         /// The length of the first dimension of a region
         /// </summary>
-        int RegionDim = 0;
+        int RegionDim = 3;
 
 
 
@@ -51,7 +53,7 @@ namespace Sudoku
 
 
 
-        public SudokuSolver() { }
+        public SudokuSolver(int regionDim = 9) { RegionDim = SquareRoot(regionDim); }
 
 
 
@@ -73,7 +75,7 @@ namespace Sudoku
             }
 
             // Calculate the dimesion(s) of the regions for the grid
-            RegionDim = (int)Math.Sqrt(grid.GetLength(0));
+            RegionDim = SquareRoot(grid.GetLength(0));
 
             // Bool array representing whether a number is valid for a cell on grid, index of 3rd dimension equals the number itself, minus 1 since going from 1-base of sudoku-numbers to 0-base of array
             bool[,,] validNums = new bool[grid.GetLength(0), grid.GetLength(1), (int)Math.Sqrt(grid.Length)];
@@ -333,7 +335,6 @@ namespace Sudoku
 
             return IsSudokuComplete(solution);
         }
-                
 
 
 
@@ -343,192 +344,17 @@ namespace Sudoku
 
 
 
-
-
-
-
-
-
-
-
-
-
-        /// <summary>
-        /// Get which numbers are valid for the cell grid[m, n]
-        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
-        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="n"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        public bool[] GetValidNumbers(int m, int n, int[,] grid)
-        {
-            bool[] validNums = new bool[grid.GetLength(0)];
-
-            if (m > -1 && n > -1 && grid != null)
-            {
-                bool[] validNumsRow = GetValidNumbersRow(m, grid);
-                bool[] validNumsColumn = GetValidNumbersColumn(n, grid);
-                bool[] validNumbersRegion = GetValidNumbersRegion(m, n, grid);
-
-                for (int i = 0; i < validNums.Length; i++)
-                {
-                    validNums[i] = validNumsRow[i] && validNumsColumn[i] && validNumbersRegion[i];
-                }
-            }
-
-            return validNums;
-        }
-
-        /// <summary>
-        /// Get which numbers are valid for the row m on grid
-        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
-        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        private bool[] GetValidNumbersRow(int m, int[,] grid)
-        {
-            // Create an bool[] filled with true, starting assumption is all numbers are valid
-            bool[] validNums = new bool[grid.GetLength(1)];
-            Array.Fill(validNums, true);
-
-            // Debug, TODO remove
-            string validNumsString = "";
-
-            // Go over the entire row, setting the value in validNums, at the index equal to the value in the cell [m,n] of the grid, minus one, to false
-            for (int n = 0; n < grid.GetLength(1); n++)
-            {
-                // If the value in the cell is not zero. Zero is always valid since it represents an empty cell, and should be ignored
-                if (grid[m, n] > 0)
-                {
-                    // Set its bool to false since it is already present in the row
-                    validNums[grid[m, n] - 1] = false;
-
-                    // Debug, TODO remove
-                    validNumsString += grid[m, n] + " ";
-                }                
-            }
-
-            // Debug, TODO remove
-            // Debug.WriteLine($"SudokuSolver: GetValidNumbersRow() found for row {m}, not {validNumsString}");
-
-            return validNums;
-        }
-
-        /// <summary>
-        /// Get which numbers are valid for the column n on grid
-        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
-        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
-        /// </summary>
-        /// <param name="n"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        private bool[] GetValidNumbersColumn(int n, int[,] grid)
-        {
-            // Create an bool[] filled with true, starting assumption is all numbers are valid
-            bool[] validNums = new bool[grid.GetLength(0)];
-            Array.Fill(validNums, true);
-
-            // Debug, TODO remove
-            string validNumsString = "";
-
-            // Go over the entire column, setting the value in validNums, at the index equal to the value in the cell [m,n] of the grid, minus one, to false
-            for (int m = 0; m < grid.GetLength(0); m++)
-            {
-                // If the value in the cell is not zero. Zero is always valid since it represents an empty cell, and should be ignored
-                if (grid[m, n] > 0)
-                {
-                    // Set its bool to false since it is already present in the column
-                    validNums[grid[m, n] - 1] = false;
-
-                    // Debug, TODO remove
-                    validNumsString += grid[m, n] + " ";
-                }
-            }
-
-            // Debug, TODO remove
-            // Debug.WriteLine($"SudokuSolver: GetValidNumbersColumn() found for column {n}, not {validNumsString}");
-
-            return validNums;
-        }
-
-        /// <summary>
-        /// Get which numbers are valid for the region on the grid containing the cell [m, n]
-        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
-        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="n"></param>
-        /// <param name="grid"></param>
-        /// <returns></returns>
-        private bool[] GetValidNumbersRegion(int m, int n, int[,] grid)
-        {
-            // Create an bool[] filled with true, starting assumption is all numbers are valid
-            bool[] validNums = new bool[(int)Math.Sqrt(grid.Length)];
-            Array.Fill(validNums, true);
-
-            // Debug, TODO remove
-            string validNumsString = "";
-
-            // Calculate the offset from [0, 0] for the region the given cell [m, n] is in
-            int regMOffset = m / RegionDim * RegionDim;
-            int regNOffset = n / RegionDim * RegionDim;
-
-            // Go over the entire region, setting the value in validNums, at the index equal to the value in the cell of the grid, minus one, to false
-            for (int m1 = regMOffset; m1 < RegionDim + regMOffset; m1++)
-            {
-                for (int n1 = regNOffset; n1 < RegionDim + regNOffset; n1++)
-                {
-                    // Debug, TODO remove
-                    // Debug.WriteLine($"SudokuSolver: GetValidNumbersRegion() looking at cell [{m1}, {n1}]");
-
-                    // If the value in the cell is not zero. Zero is always valid since it represents an empty cell, and should be ignored
-                    if (grid[m1, n1] > 0)
-                    {
-                        // Set its bool to false since it is already present in the region
-                        validNums[grid[m1, n1] - 1] = false;
-
-                        // Debug, TODO remove
-                        validNumsString += grid[m1, n1] + " ";
-                    }
-                }
-            }
-
-            // Debug, TODO remove
-            // Debug.WriteLine($"SudokuSolver: GetValidNumbersRegion() found for region around [{m},{n}], not {validNumsString}");
-
-            return validNums;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // -----------------------------------------------------------------
+        // ----------------      Find Valid Numbers      -------------------
+        // -----------------------------------------------------------------
+        #region FIND_VALID_NUMS
 
         /// <summary>
         /// Find all valid numbers for each cell on the specified solution grid and write them to validNums
         /// </summary>
         /// <param name="solution"></param>
         /// <param name="validNums"></param>
-        private void FindValidNumbers(int[,] solution, bool[,,] validNums)
+        public void FindValidNumbers(int[,] solution, bool[,,] validNums)
         {
             // For every row of the sudoku
             for (int m = 0; m < solution.GetLength(0); m++)
@@ -577,12 +403,196 @@ namespace Sudoku
 
 
         /// <summary>
+        /// Get which numbers are valid for the cell grid[m, n]
+        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
+        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="n"></param>
+        /// <param name="grid"></param>
+        /// <returns></returns>
+        public bool[] GetValidNumbers(int m, int n, int[,] grid)
+        {
+            bool[] validNums = new bool[grid.GetLength(0)];
+
+            if (m > -1 && n > -1 && grid != null)
+            {
+                bool[] validNumsRow = GetValidNumbersRow(m, grid);
+                bool[] validNumsColumn = GetValidNumbersColumn(n, grid);
+                bool[] validNumbersRegion = GetValidNumbersRegion(m, n, grid);
+
+                for (int i = 0; i < validNums.Length; i++)
+                {
+                    validNums[i] = validNumsRow[i] && validNumsColumn[i] && validNumbersRegion[i];
+                }
+            }
+
+            return validNums;
+        }
+
+        /// <summary>
+        /// Get which numbers are valid for the row m on grid
+        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
+        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="grid"></param>
+        /// <returns></returns>
+        public bool[] GetValidNumbersRow(int m, int[,] grid)
+        {
+            // Create an bool[] filled with true, starting assumption is all numbers are valid
+            bool[] validNums = new bool[grid.GetLength(1)];
+            Array.Fill(validNums, true);
+
+            // Debug, TODO remove
+            string validNumsString = "";
+
+            // Go over the entire row, setting the value in validNums, at the index equal to the value in the cell [m,n] of the grid, minus one, to false
+            for (int n = 0; n < grid.GetLength(1); n++)
+            {
+                // If the value in the cell is not zero. Zero is always valid since it represents an empty cell, and should be ignored
+                if (grid[m, n] > 0)
+                {
+                    // Set its bool to false since it is already present in the row
+                    validNums[grid[m, n] - 1] = false;
+
+                    // Debug, TODO remove
+                    validNumsString += grid[m, n] + " ";
+                }                
+            }
+
+            // Debug, TODO remove
+            // Debug.WriteLine($"SudokuSolver: GetValidNumbersRow() found for row {m}, not {validNumsString}");
+
+            return validNums;
+        }
+
+        /// <summary>
+        /// Get which numbers are valid for the column n on grid
+        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
+        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="grid"></param>
+        /// <returns></returns>
+        public bool[] GetValidNumbersColumn(int n, int[,] grid)
+        {
+            // Create an bool[] filled with true, starting assumption is all numbers are valid
+            bool[] validNums = new bool[grid.GetLength(0)];
+            Array.Fill(validNums, true);
+
+            // Debug, TODO remove
+            string validNumsString = "";
+
+            // Go over the entire column, setting the value in validNums, at the index equal to the value in the cell [m,n] of the grid, minus one, to false
+            for (int m = 0; m < grid.GetLength(0); m++)
+            {
+                // If the value in the cell is not zero. Zero is always valid since it represents an empty cell, and should be ignored
+                if (grid[m, n] > 0)
+                {
+                    // Set its bool to false since it is already present in the column
+                    validNums[grid[m, n] - 1] = false;
+
+                    // Debug, TODO remove
+                    validNumsString += grid[m, n] + " ";
+                }
+            }
+
+            // Debug, TODO remove
+            // Debug.WriteLine($"SudokuSolver: GetValidNumbersColumn() found for column {n}, not {validNumsString}");
+
+            return validNums;
+        }
+
+        /// <summary>
+        /// Get which numbers are valid for the region on the grid containing the cell [m, n]
+        /// Returns a bool[], its length equal to a dimension of the grid, and thereby equal to the length of all numbers required
+        /// So, element[0] will contain whether the number 1 is allowed or not at the given position [m,n] in grid, [1] contains if 2 is allowed, etc
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="n"></param>
+        /// <param name="grid"></param>
+        /// <returns></returns>
+        public bool[] GetValidNumbersRegion(int m, int n, int[,] grid)
+        {
+            // Create an bool[] filled with true, starting assumption is all numbers are valid
+            bool[] validNums = new bool[(int)Math.Sqrt(grid.Length)];
+            Array.Fill(validNums, true);
+
+            // Debug, TODO remove
+            string validNumsString = "";
+
+            // Calculate the offset from [0, 0] for the region the given cell [m, n] is in
+            int regMOffset = m / RegionDim * RegionDim;
+            int regNOffset = n / RegionDim * RegionDim;
+
+            // Go over the entire region, setting the value in validNums, at the index equal to the value in the cell of the grid, minus one, to false
+            for (int m1 = regMOffset; m1 < RegionDim + regMOffset; m1++)
+            {
+                for (int n1 = regNOffset; n1 < RegionDim + regNOffset; n1++)
+                {
+                    // Debug, TODO remove
+                    // Debug.WriteLine($"SudokuSolver: GetValidNumbersRegion() looking at cell [{m1}, {n1}]");
+
+                    // If the value in the cell is not zero. Zero is always valid since it represents an empty cell, and should be ignored
+                    if (grid[m1, n1] > 0)
+                    {
+                        // Set its bool to false since it is already present in the region
+                        validNums[grid[m1, n1] - 1] = false;
+
+                        // Debug, TODO remove
+                        validNumsString += grid[m1, n1] + " ";
+                    }
+                }
+            }
+
+            // Debug, TODO remove
+            // Debug.WriteLine($"SudokuSolver: GetValidNumbersRegion() found for region around [{m},{n}], not {validNumsString}");
+
+            return validNums;
+        }
+
+        #endregion FIND_VALID_NUMS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // -----------------------------------------------------------------
+        // ----------------      Find Single Valids      -------------------
+        // -----------------------------------------------------------------
+        #region SINGLE_VALIDS
+
+        /// <summary>
         /// Find cells that have only one valid number, meaning that number is the only possible solution
         /// </summary>
         /// <param name="solution"></param>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool FindSingleValueCells(int[,] solution, bool[,,] validNums)
+        public bool FindSingleValueCells(int[,] solution, bool[,,] validNums)
         {
             // Is any solution found by this method
             bool isAnyCellSolved = false;
@@ -656,7 +666,6 @@ namespace Sudoku
         }
 
 
-
         /// <summary>
         /// Find all values that occure only once in a row, meaning that that is the only place they can be entered for the solution
         /// If such a value is found, enter it into the solution and remove it from validNums
@@ -664,7 +673,7 @@ namespace Sudoku
         /// </summary>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool FindSingleValuesRows(int[,] solution, bool[,,] validNums)
+        public bool FindSingleValuesRows(int[,] solution, bool[,,] validNums)
         {
             // Is any solution found by this method
             bool isAnyCellSolved = false;
@@ -724,7 +733,7 @@ namespace Sudoku
         /// </summary>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool FindSingleValuesColumns(int[,] solution, bool[,,] validNums)
+        public bool FindSingleValuesColumns(int[,] solution, bool[,,] validNums)
         {
             // Is any solution found by this method
             bool isAnyCellSolved = false;
@@ -776,6 +785,7 @@ namespace Sudoku
             return isAnyCellSolved;
         }
 
+
         /// <summary>
         /// Find all values that occure only once in a region, meaning that that is the only place they can be entered for the solution
         /// If such a value is found, enter it into the solution and remove it from validNums
@@ -783,7 +793,7 @@ namespace Sudoku
         /// </summary>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool FindSingleValuesRegions(int[,] solution, bool[,,] validNums)
+        public bool FindSingleValuesRegions(int[,] solution, bool[,,] validNums)
         {
             // Is any solution found by this method
             bool isAnyCellSolved = false;
@@ -850,6 +860,17 @@ namespace Sudoku
             return isAnyCellSolved;
         }
 
+        #endregion SINGLE_VALIDS
+
+
+
+
+
+
+        // -----------------------------------------------------------------
+        // ----------------      Find Limited Valids      ------------------
+        // -----------------------------------------------------------------
+        #region LIMITED_VALIDS
 
         /// <summary>
         /// Look at every region and check if a valid number in that region is limited to a single row or column, occuring multiple times in only that row or column and nowhere else in the region
@@ -860,7 +881,7 @@ namespace Sudoku
         /// <param name="solution"></param>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool FindValuesLimitedToSingleRowOrColumnOfRegions(int[,] solution, bool[,,] validNums)
+        public bool FindValuesLimitedToSingleRowOrColumnOfRegions(int[,] solution, bool[,,] validNums)
         {
             // Method is only capable of handeling the standard 9x9 grid (TODO verify is still true)
             if (solution.GetLength(0) != 9 || solution.GetLength(1) != 9)
@@ -984,7 +1005,7 @@ namespace Sudoku
         /// <param name="solution"></param>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool FindRowOrColumnNumbersValidInSingleRegion(int[,] solution, bool[,,] validNums)
+        public bool FindRowOrColumnNumbersValidInSingleRegion(int[,] solution, bool[,,] validNums)
         {
             bool isAnyCellAltered = false;
 
@@ -1073,6 +1094,7 @@ namespace Sudoku
             return isAnyCellAltered;
         }
 
+        #endregion LIMITED_VALIDS
 
 
 
@@ -1081,12 +1103,10 @@ namespace Sudoku
 
 
 
-
-
-
-
-
-
+        // -----------------------------------------------------------------
+        // -------------      Remove (no longer) Valids      ---------------
+        // -----------------------------------------------------------------
+        #region REMOVE_VALIDS
 
         /// <summary>
         /// Set the number 'number' to not be a valid number on all the cells in the same row, column and region as the cell at [m, n]
@@ -1095,7 +1115,7 @@ namespace Sudoku
         /// <param name="n"></param>
         /// <param name="number"></param>
         /// <param name="validNums"></param>
-        private void RemoveValidNumbersFromCellAndConnectedSequences(int m, int n, int number, bool[,,] validNums)
+        public void RemoveValidNumbersFromCellAndConnectedSequences(int m, int n, int number, bool[,,] validNums)
         {
             // Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromConnectedSequences() deleting {number + 1} from cells connected to [{m}, {n}]");
 
@@ -1118,7 +1138,7 @@ namespace Sudoku
         /// <param name="number"></param>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool RemoveValidNumbersFromRowExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
+        public bool RemoveValidNumbersFromRowExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
         {
             // Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromRowExcludingLocalRegion() deleting {number + 1} from cells connected to [{m}, {n}]");
 
@@ -1152,7 +1172,7 @@ namespace Sudoku
         /// <param name="number"></param>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool RemoveValidNumbersFromColumnExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
+        public bool RemoveValidNumbersFromColumnExcludingLocalRegion(int m, int n, int number, bool[,,] validNums)
         {
             // Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromColumnExcludingLocalRegion() trying to remove {number + 1} from cells connected to [{m}, {n}]");
 
@@ -1186,7 +1206,7 @@ namespace Sudoku
         /// <param name="number"></param>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool RemoveValidNumbersFromRegionExcludingRow(int m, int n, int number, bool[,,] validNums)
+        public bool RemoveValidNumbersFromRegionExcludingRow(int m, int n, int number, bool[,,] validNums)
         {
             // Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromRegionExcludingRow() trying to remove {number + 1} from region containing [{m}, {n}]");
 
@@ -1220,7 +1240,7 @@ namespace Sudoku
         /// <param name="number"></param>
         /// <param name="validNums"></param>
         /// <returns></returns>
-        private bool RemoveValidNumbersFromRegionExcludingColumn(int m, int n, int number, bool[,,] validNums)
+        public bool RemoveValidNumbersFromRegionExcludingColumn(int m, int n, int number, bool[,,] validNums)
         {
             // Debug.WriteLine($"SudokuSolver: RemoveValidNumbersFromRegionExcludingColumn() trying to remove {number + 1} from region containing [{m}, {n}]");
 
@@ -1246,7 +1266,7 @@ namespace Sudoku
             return isAnyCellAltered;
         }
 
-
+        #endregion REMOVE_VALIDS
 
 
 
@@ -1264,7 +1284,7 @@ namespace Sudoku
         /// <param name="solution"></param>
         /// <param name="validNums"></param>
         /// <param name="debugMessage"></param>
-        private void EnterSolution(int m, int n, int num, int[,] solution, bool[,,] validNums, string debugMessage = "")
+        public void EnterSolution(int m, int n, int num, int[,] solution, bool[,,] validNums, string debugMessage = "")
         {            
             if (debugMessage != "") { Debug.WriteLine($"SudokuSolver: EnterSolution() debugMessage {debugMessage}"); }
             Debug.WriteLine($"SudokuSolver: EnterSolution() solution entered, [{m}, {n}] =  {num + 1}");
@@ -1283,14 +1303,17 @@ namespace Sudoku
 
 
 
-
+        // -----------------------------------------------------------------
+        // -----------------      Helper Methods      ----------------------
+        // -----------------------------------------------------------------
+        #region HELPER_METHODS
 
         /// <summary>
         /// Check whether the grid is full or if it contains any empty cell, ie cells containing 0
         /// </summary>
         /// <param name="grid"></param>
         /// <returns>True if no cell on the grid is 0, false if there is</returns>
-        private bool IsGridFull(int[,] grid)
+        public bool IsGridFull(int[,] grid)
         {
             foreach (int value in grid)
             {
@@ -1304,7 +1327,7 @@ namespace Sudoku
         /// </summary>
         /// <param name="grid"></param>
         /// <returns></returns>
-        private bool IsSudokuValid(int[,] grid)
+        public bool IsSudokuValid(int[,] grid)
         {
             // Can only handle gird with 2 dimensions of equal length
             if (grid.GetLength(0) != grid.GetLength(1)) { return false; }
@@ -1323,8 +1346,9 @@ namespace Sudoku
                     // If -1 was found, meaning and error occured while trying to find the solution for that cell
                     if (grid[m, n] < 0)
                     {
-                        // Set all numbers of row to false, resulting in false being returned at the end
-                        Array.Fill(numbersRow, false);
+                        // Set the number first to false, resulting in false being returned at the end, and break the loop
+                        numbersRow[0] = false;
+                        break;
                     }
                     else
                     {
@@ -1353,6 +1377,13 @@ namespace Sudoku
                     if (numbersRow[num] == false || numbersColumn[num] == false || numbersRegion[num] == false)
                     {
                         isValid = false;
+
+                        // TODO remove, debug
+                        if (numbersRow[num] == false) { Debug.WriteLine($"SudokuSolver: IsSudokuValid() row invalid, row={m}, num={num + 1}"); }
+                        if (numbersColumn[num] == false) { Debug.WriteLine($"SudokuSolver: IsSudokuValid() column invalid, column={m}, num={num + 1}"); }
+                        if (numbersRegion[num] == false) { Debug.WriteLine($"SudokuSolver: IsSudokuValid() region invalid, region={m}, num={num + 1}"); }
+
+                        break;
                     }
                 }
             }
@@ -1365,7 +1396,7 @@ namespace Sudoku
         /// </summary>
         /// <param name="grid"></param>
         /// <returns></returns>
-        private bool IsSudokuComplete(int[,] grid)
+        public bool IsSudokuComplete(int[,] grid)
         {
             // Can only handle gird with 2 dimensions of equal length
             if (grid.GetLength(0) != grid.GetLength(1)) { return false; }
@@ -1427,6 +1458,18 @@ namespace Sudoku
 
 
 
+        /// <summary>
+        /// Return the square root of the 'x' as a whole number, rounded down if required
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public int SquareRoot(int x)
+        {
+            return (int)Math.Sqrt(Math.Abs(x));
+        }
+
+
+
 
 
         /// <summary>
@@ -1434,7 +1477,7 @@ namespace Sudoku
         /// </summary>
         /// <param name="array"></param>
         /// <param name="state"></param>
-        private static void FillBoolArray(bool[,] array, bool state)
+        public static void FillBoolArray(bool[,] array, bool state)
         {
             for (int m = 0; m < array.GetLength(0); m++)
             {
@@ -1450,7 +1493,7 @@ namespace Sudoku
         /// </summary>
         /// <param name="array"></param>
         /// <param name="state"></param>
-        private static void FillBoolArray(bool[,,] array, bool state)
+        public static void FillBoolArray(bool[,,] array, bool state)
         {
             for (int m = 0; m < array.GetLength(0); m++)
             {
@@ -1463,6 +1506,10 @@ namespace Sudoku
                 }
             }
         }
+
+
+
+
 
         /// <summary>
         /// Print the specified sudoku grid to output
@@ -1509,7 +1556,7 @@ namespace Sudoku
             }
         }
 
-
+        #endregion HELPER_METHODS
 
 
 

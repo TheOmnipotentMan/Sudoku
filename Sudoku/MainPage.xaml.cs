@@ -77,11 +77,12 @@ namespace Sudoku
 
 
         /// <summary>
-        /// Path to provided xml file
+        /// Path to provided storage file(s)
         /// </summary>
         private string StandardXmlFilePath = "SudokuStorage.xml";
+        private string StandardJsonFilePath = "SudokuStorage.json";
 
-        
+
         // Font values for numbers on sudoku grid
         private int SudokuGridFontSize = 32;
         private Windows.UI.Text.FontWeight StartingValueFontWeight = Windows.UI.Text.FontWeights.Bold;
@@ -109,6 +110,7 @@ namespace Sudoku
 
             InstantiateSudokuSource();
             ImportSudokusFromXmlFile();
+            ImportSudokusFromJsonFile();
             InstaniateStorageInputGridCells();
         }
 
@@ -358,6 +360,25 @@ namespace Sudoku
 
             // Get the content from the xml file, and add it to SudokuStorage
             AddToSudokuStorage(SudokuSource.GetContentFromXmlFile(path));
+        }
+
+        private void ImportSudokusFromJsonFile(string path = "")
+        {
+            // Use the default xml file if no file was specified
+            if (path == "") { path = StandardJsonFilePath; }
+
+            // Abort if file could not be found or is not .xml
+            if (!File.Exists(path) || path.Substring(path.Length - 5) != ".json")
+            {
+                Debug.WriteLine($"MainPage: ImportSudokusFromJsonFile() recieved invalid file path, {path}");
+                return;
+            }
+
+            // Make sure SudokuStorage has been instantiated
+            if (SudokuStorage == null) { InstatiateSudokuStorage(); }
+
+            // Get the content from the xml file, and add it to SudokuStorage
+            AddToSudokuStorage(SudokuSource.GetContentFromJsonFile(path));
         }
 
         /// <summary>
@@ -842,6 +863,336 @@ namespace Sudoku
             return Math.Sqrt(x) % 1 == 0;
         }
 
+
+        // TODO remove once no longer needed
+        private void TEMP_TranslateCollectionToJson()
+        {
+            List<StorageGroup> storage = new List<StorageGroup>();
+            storage.Add(new StorageGroup("Kaidoku", "https://sekika.github.io/kaidoku/book"));
+
+            #region KAIDOKU_VERYEASY
+            storage.Last().AddCategory("Very Easy");
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 9,0,0,8,5,0,2,1,4 },
+                    { 5,4,2,1,6,3,0,7,0 },
+                    { 8,0,0,0,0,2,0,0,3 },
+                    { 3,0,1,0,0,4,0,0,7 },
+                    { 0,7,0,3,0,6,0,2,0 },
+                    { 2,0,0,9,0,0,4,0,5 },
+                    { 1,0,0,6,0,0,0,0,2 },
+                    { 0,2,0,7,1,5,3,4,8 },
+                    { 7,3,8,0,4,9,0,0,6 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 2,0,8,9,0,6,5,0,3 },
+                    { 9,1,0,3,2,0,0,8,0 },
+                    { 0,3,6,0,0,1,0,4,0 },
+                    { 0,9,0,0,0,8,3,0,1 },
+                    { 0,6,3,0,5,0,2,7,0 },
+                    { 4,0,1,7,0,0,0,5,0 },
+                    { 0,7,0,8,0,0,6,3,0 },
+                    { 0,5,0,0,1,7,0,2,8 },
+                    { 6,0,2,4,0,5,1,0,7 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 6,0,4,0,0,0,0,1,3 },
+                    { 1,8,2,0,3,6,0,5,9 },
+                    { 0,0,9,0,5,1,6,8,0 },
+                    { 3,0,0,1,0,0,9,6,0 },
+                    { 0,0,5,0,7,0,1,0,0 },
+                    { 0,4,1,0,0,5,0,0,7 },
+                    { 0,1,7,9,8,0,3,0,0 },
+                    { 8,2,0,6,1,0,5,9,4 },
+                    { 4,8,0,0,0,0,8,0,1 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,0,0,0,8,5,9,2 },
+                    { 0,0,9,5,0,4,0,0,0 },
+                    { 0,5,1,2,3,0,0,4,0 },
+                    { 1,8,0,0,0,3,4,5,0 },
+                    { 7,0,2,0,8,0,1,0,3 },
+                    { 0,4,5,1,0,0,0,2,8 },
+                    { 0,3,0,0,6,7,2,1,0 },
+                    { 0,0,0,9,0,2,3,0,0 },
+                    { 6,2,8,3,0,0,0,0,0 }
+                }
+            });
+            #endregion KAIDOKU_VERYEASY
+
+            #region KAIDOKU_EASY
+            storage.Last().AddCategory("Easy");
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,0,7,9,0,0,3,4 },
+                    { 5,0,9,2,0,0,0,1,8 },
+                    { 0,3,0,6,0,0,0,0,0 },
+                    { 2,4,0,1,0,0,0,0,0 },
+                    { 0,0,8,0,4,0,9,0,0 },
+                    { 0,0,0,0,0,6,0,4,7 },
+                    { 0,0,0,0,0,8,0,2,0 },
+                    { 1,8,0,0,0,2,4,0,3 },
+                    { 4,7,0,0,1,3,0,0,0 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,2,0,8,7,0,0,0,6 },
+                    { 0,0,0,0,6,0,2,0,0 },
+                    { 0,0,4,1,0,0,0,0,5 },
+                    { 0,0,0,6,0,7,3,1,0 },
+                    { 6,0,0,0,0,0,0,0,4 },
+                    { 0,8,7,4,0,5,0,0,0 },
+                    { 7,0,0,0,0,3,9,0,0 },
+                    { 0,0,1,0,8,0,0,0,0 },
+                    { 9,0,0,0,4,1,0,5,0 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 4,2,0,0,0,1,0,8,0 },
+                    { 0,3,8,0,0,0,2,0,0 },
+                    { 0,0,1,0,9,0,0,0,3 },
+                    { 0,9,0,4,7,0,0,0,5 },
+                    { 0,0,0,8,0,2,0,0,0 },
+                    { 5,0,0,0,1,9,0,6,0 },
+                    { 2,0,0,0,6,0,3,0,0 },
+                    { 0,0,4,0,0,0,5,1,0 },
+                    { 0,6,0,5,0,0,0,4,2 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 1,3,0,0,0,7,0,0,5 },
+                    { 0,0,8,2,1,0,7,0,9 },
+                    { 2,0,0,9,0,0,0,0,0 },
+                    { 0,0,0,0,9,3,0,4,6 },
+                    { 0,2,0,0,0,0,0,5,0 },
+                    { 9,4,0,5,2,0,0,0,0 },
+                    { 0,0,0,0,9,0,0,0,2 },
+                    { 6,0,7,0,5,2,4,0,0 },
+                    { 8,0,0,3,0,0,0,6,1 }
+                }
+            });
+            #endregion KAIDOKU_EASY
+
+            #region KAIDOKU_MEDIUM
+            storage.Last().AddCategory("Medium");
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 3,1,0,0,0,2,0,0,0 },
+                    { 0,0,0,8,6,0,2,0,0 },
+                    { 0,0,8,0,0,3,0,7,5 },
+                    { 0,0,7,0,9,8,3,5,0 },
+                    { 0,9,0,0,0,0,0,8,0 },
+                    { 0,5,3,6,2,0,4,0,0 },
+                    { 6,3,0,2,0,0,9,0,0 },
+                    { 0,0,9,0,3,6,0,0,0 },
+                    { 0,0,0,1,0,0,0,6,3 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,0,1,9,4,0,0,0 },
+                    { 0,0,7,0,0,0,0,0,0 },
+                    { 0,0,8,2,0,0,0,9,0 },
+                    { 6,0,0,0,7,3,0,1,0 },
+                    { 8,0,9,0,0,0,6,0,5 },
+                    { 0,1,0,6,8,0,0,0,7 },
+                    { 0,4,0,0,0,1,3,0,0 },
+                    { 0,0,0,0,0,0,2,0,0 },
+                    { 0,0,0,8,3,5,0,0,0 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 6,0,4,5,0,0,0,0,0 },
+                    { 1,3,5,0,0,0,0,0,0 },
+                    { 0,0,2,6,4,8,1,0,3 },
+                    { 0,0,0,0,0,7,0,0,8 },
+                    { 5,2,8,0,0,0,4,1,7 },
+                    { 3,0,0,8,0,0,0,0,0 },
+                    { 2,0,9,7,8,3,5,0,0 },
+                    { 0,0,0,0,0,0,3,8,9 },
+                    { 0,0,0,0,0,5,7,0,4 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,0,0,0,7,6,0,2 },
+                    { 0,0,0,5,8,0,0,1,0 },
+                    { 0,7,0,3,0,0,0,9,0 },
+                    { 4,0,6,0,3,0,0,0,0 },
+                    { 5,0,9,0,0,0,3,0,6 },
+                    { 0,0,0,0,2,0,1,0,4 },
+                    { 0,4,0,0,0,3,0,7,0 },
+                    { 0,9,0,0,5,8,0,0,0 },
+                    { 8,0,2,9,0,0,0,0,0 }
+                }
+            });
+            #endregion KAIDOKU_MEDIUM
+
+            #region KAIDOKU_HARD
+            storage.Last().AddCategory("Hard");
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,9,5,0,2,1,0,6 },
+                    { 0,0,0,0,7,0,9,0,0 },
+                    { 0,0,0,0,0,6,0,5,7 },
+                    { 0,6,0,0,0,0,3,0,5 },
+                    { 0,0,2,6,0,9,7,0,0 },
+                    { 8,0,4,0,0,0,0,6,0 },
+                    { 4,7,0,3,0,0,0,0,0 },
+                    { 0,0,8,0,9,0,0,0,0 },
+                    { 3,0,5,2,0,1,8,0,0 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 1,0,9,0,0,0,0,0,8 },
+                    { 0,8,0,7,9,0,0,0,0 },
+                    { 0,3,7,0,0,0,0,6,2 },
+                    { 0,0,5,4,0,0,0,3,0 },
+                    { 4,0,0,3,0,7,0,0,9 },
+                    { 0,2,0,0,0,9,6,0,0 },
+                    { 8,9,0,0,0,0,7,2,0 },
+                    { 0,0,0,0,4,3,0,9,0 },
+                    { 3,0,0,0,0,0,4,0,6 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 2,0,3,6,0,0,0,8,0 },
+                    { 1,5,0,0,8,0,0,0,0 },
+                    { 0,0,9,0,2,0,5,0,3 },
+                    { 9,0,0,4,3,0,0,0,0 },
+                    { 0,2,0,0,9,0,0,3,0 },
+                    { 0,0,0,0,6,8,0,0,1 },
+                    { 7,0,5,0,1,0,3,0,0 },
+                    { 0,0,0,0,4,0,0,2,5 },
+                    { 0,4,0,0,0,3,6,0,9 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,0,0,0,0,9,0,0 },
+                    { 0,0,2,7,0,0,0,0,6 },
+                    { 9,0,0,2,0,0,8,3,0 },
+                    { 0,4,0,0,7,0,0,0,3 },
+                    { 0,3,0,0,1,0,0,2,0 },
+                    { 6,0,0,0,5,0,0,9,0 },
+                    { 0,2,1,0,0,9,0,0,4 },
+                    { 3,0,0,0,0,5,2,0,0 },
+                    { 0,0,8,0,0,0,0,0,0 }
+                }
+            });
+            #endregion KAIDOKU_HARD
+
+            #region KAIDOKU_VERYHARD
+            storage.Last().AddCategory("Very Hard");
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,9,0,0,0,1,0,2 },
+                    { 0,0,0,8,9,0,0,7,0 },
+                    { 4,0,0,0,1,0,0,0,3 },
+                    { 0,0,0,0,0,5,2,0,0 },
+                    { 0,6,1,0,3,0,7,4,0 },
+                    { 0,0,5,6,0,0,0,0,0 },
+                    { 7,0,0,0,6,0,0,0,9 },
+                    { 0,5,0,0,4,9,0,0,0 },
+                    { 1,0,4,0,0,0,3,0,0 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,0,6,0,0,8,0,0 },
+                    { 2,0,0,1,3,0,7,0,0 },
+                    { 0,0,9,0,0,0,0,4,0 },
+                    { 0,5,2,0,0,3,1,7,0 },
+                    { 0,0,0,7,5,1,0,0,0 },
+                    { 0,4,7,2,0,0,5,6,0 },
+                    { 0,3,0,0,0,0,9,0,0 },
+                    { 0,0,1,0,4,7,0,0,2 },
+                    { 0,0,6,0,0,8,0,0,0 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,0,4,5,0,8,0,0,0 },
+                    { 0,1,6,9,0,0,0,4,0 },
+                    { 5,0,0,4,0,6,0,0,2 },
+                    { 0,0,3,0,4,0,0,0,0 },
+                    { 6,8,0,3,0,7,0,1,4 },
+                    { 0,0,0,0,8,0,3,0,0 },
+                    { 2,0,0,8,0,4,0,0,5 },
+                    { 0,9,0,0,0,3,4,2,0 },
+                    { 0,0,0,7,0,5,9,0,0 }
+                }
+            });
+            storage.Last().Categories.Last().Items.Add(new Item()
+            {
+                Grid = new int[9, 9]
+                {
+                    { 0,2,0,3,0,0,0,8,0 },
+                    { 0,0,0,0,0,0,3,0,4 },
+                    { 5,0,0,0,0,0,6,1,0 },
+                    { 0,0,0,0,9,0,0,6,0 },
+                    { 6,0,0,4,3,1,0,0,2 },
+                    { 0,8,0,0,5,0,0,0,0 },
+                    { 0,3,9,0,0,0,0,0,8 },
+                    { 1,0,7,0,0,0,0,0,0 },
+                    { 0,5,0,0,0,7,0,4,0 }
+                }
+            });
+            #endregion KAIDOKU_VERYHARD
+
+            SudokuSource.AddContentToJsonFile(storage);
+        }
+
         #endregion HELPER_METHODS
 
 
@@ -870,28 +1221,13 @@ namespace Sudoku
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            GetSolution(true);
+            // GetSolution(true);
+            
         }
 
         private void Test2Button_Click(object sender, RoutedEventArgs e)
         {
-            int[,] grid = new int[9, 9];
-            int[,] grid2 = new int[9, 9];
-            for (int m = 0; m < grid.GetLength(0); m++)
-            {
-                for (int n = 0; n < grid.GetLength(1); n++)
-                {
-                    grid[m, n] = (m + n) % 9;
-                    grid2[m, n] = n;
-                }
-            }
-
-            List<StorageGroup> storage = new List<StorageGroup>();
-            storage.Add(new StorageGroup("JsonTestGroup", "JsonTestSource"));
-            storage[0].AddCategory("JsonTestCategory");
-            storage[0].Categories[0].AddItem(grid, "JsonTestItem");
-
-            SudokuSource.AddContentToJsonFile(SudokuStorage);
+            TEMP_TranslateCollectionToJson();
         }
 
         private void SudokuCellButtonsGridView_Click(object sender, ItemClickEventArgs e)
